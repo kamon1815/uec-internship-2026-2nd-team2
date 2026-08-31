@@ -66,23 +66,24 @@ yoloのonnxはultralyticsから書き出せる。
 
 ### ・基本(web-camera-sample/)
 
-* [hello_opencv](web-camera-sample/hello-opencv.py)
+* [hello-opencv.py](web-camera-sample/hello-opencv.py)
 
 OpenCVで画像を読み込んで表示する
+1. hello-opencv.pyを実行
 
-* [web-camera-sample](web-camera-sample/web-camera-sample.py)
+* [web-camera-sample.py](web-camera-sample/web-camera-sample.py)
 
 webカメラから取得した画像を1枚だけ表示する
-web-camera-sample.pyを実行
+1. web-camera-sample.pyを実行
 
 
 ### ・INFINICAM周りのサンプル(pypuclib-main/pypuclib/pypuclib_sample/)
-* [hello_infinicam](pypuclib-main/pypuclib/pypuclib_sample/hello_world.py)
+* [hello_world.py](pypuclib-main/pypuclib/pypuclib_sample/hello_world.py)
 
 INFINICAMで取得した画像をリアルタイムで表示するサンプルコード
-カメラを接続し、hello_world.pyを実行
+1. カメラを接続し、hello_world.pyを実行
 
-* [gui_infinicam](pypuclib-main/pypuclib/pypuclib_sample/gui_sample.py)
+* [gui_sample.py](pypuclib-main/pypuclib/pypuclib_sample/gui_sample.py)
 
 INFINICAMをGUIで制御するサンプルコード。解像度や撮影速度、シャッター速度をGUIベースで切り替えられる。
 1. カメラを接続し、gui_sample.pyを実行
@@ -92,7 +93,7 @@ INFINICAMをGUIで制御するサンプルコード。解像度や撮影速度�
 
 ※画面下部のFrameに数値を入力すると、指定フレームへ移動可能。
 
-* [save_movie_infinicam](pypuclib-main/pypuclib/pypuclib_sample/create_movie.py)
+* [create_movie.py](pypuclib-main/pypuclib/pypuclib_sample/create_movie.py)
 
 INFINICAMで取得した映像をavi形式で録画する
 1. カメラを接続し、create_movie.pyのスクリプトを実行。
@@ -101,7 +102,7 @@ INFINICAMで取得した映像をavi形式で録画する
 
 ※ SAVE_FRAME_COUNT で録画枚数を変更可能（容量に注意）。
 
-* [tracking_infinicam](pypuclib-main/pypuclib/pypuclib_sample/tracking_sample.py)
+* [tracking_sample.py](pypuclib-main/pypuclib/pypuclib_sample/tracking_sample.py)
 
 テンプレートマッチングを用いたオブジェクト追跡用サンプル
 1. カメラを接続してtracking_sample.pyを実行
@@ -116,7 +117,7 @@ INFINICAMで取得した映像をavi形式で録画する
 
 AIを用いてモノクロ画像をカラー化するサンプル。処理が重いので、GPUやNPUに計算させて高速化する。
 
-* [image_colorize](ddcolor_sample/image_colorize_openvino.py)
+* [image_colorize_openvino.py](ddcolor_sample/image_colorize_openvino.py)
 
 DDColorモデルで読み込んだモノクロ画像のカラー化を行う。
 1. imageフォルダに白黒画像を入れる
@@ -124,8 +125,8 @@ DDColorモデルで読み込んだモノクロ画像のカラー化を行う。
 3. 実行する
 4. 同じ階層のoutputフォルダーにカラー化された画像が格納される
 
-* [infinicam_colorize](ddcolor_sample/infinicam_colorize_openvino.py)
-* [webcamera_colorize](ddcolor_sample/webcam_colorize_openvino.py)
+* [infinicam_colorize_openvino.py](ddcolor_sample/infinicam_colorize_openvino.py)
+* [webcam_colorize_openvino.py](ddcolor_sample/webcam_colorize_openvino.py)
 
 INFINICAM及びwebカメラの画像をカラー化する。必要に応じて使い分け。
 webカメラはカラー→モノクロにしてからカラー化している。
@@ -142,8 +143,8 @@ webカメラはカラー→モノクロにしてからカラー化している�
 ※npu_fp32という選択肢が無いのは、NPUがf16での計算にしか対応していないため。
 ※MODEを4通り試して、画面左上のfpsがどれだけ変わるか比べてみるとよい。
 
-* [infinicam_colorize_yolo_realtime](ddcolor_sample/infinicam_colirize_yolo_realtime.py)
-* [webcamera_colorize_yolo_realtime](ddcolor_sample/webcam_colirize_yolo_realtime.py)
+* [infinicam_colirize_yolo_realtime.py](ddcolor_sample/infinicam_colirize_yolo_realtime.py)
+* [webcam_colirize_yolo_realtime.py](ddcolor_sample/webcam_colirize_yolo_realtime.py)
 
 INFINICAM及びwebカメラの画像をカラー化しつつyoloで物体検出をリアルタイムで行う。必要に応じて使い分け。
 webカメラはカラー→モノクロにしてからカラー化している。
@@ -163,8 +164,8 @@ webカメラはカラー→モノクロにしてからカラー化している�
 
 GPUやNPUを用いてリアルタイムに物体検出を行うサンプル。
 
-* [infinicam_yolo_realtime](yolo_sample/infinicam_yolo_realtime.py)
-* [webcamera_yolo_realtime](yolo_sample/webcam_yolo_realtime.py)
+* [infinicam_yolo_realtime.py](yolo_sample/infinicam_yolo_realtime.py)
+* [webcam_yolo_realtime.py](yolo_sample/webcam_yolo_realtime.py)
 
 INFINICAM及びwebカメラの画像でGPUやNPUを用いてリアルタイムにyoloの検出を行う。
 1. INFINICAMを接続後、infinicam_yolo_realtime.py を実行。
