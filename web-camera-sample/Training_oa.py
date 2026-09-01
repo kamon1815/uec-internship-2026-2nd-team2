@@ -9,18 +9,21 @@ from pathlib import Path
 #print(Path(__file__).resolve().parent)
 
 cap = cv2.VideoCapture(0)
-# ウェブカメラの画像取得
-ret, img = cap.read()
+while True:
+    # ウェブカメラの画像取得
+    ret, img = cap.read()
 
-#グレースケール化
-img_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+    #グレースケール化
+    img_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
-#エッジ検出(Canny)
-img_edge = cv2.Canny(img_gray, 150.0, 190.0)
+    #エッジ検出(Canny)
+    img_edge = cv2.Canny(img_gray, 150.0, 190.0)
 
-# 画像表示
-cv2.imshow('test', img_edge)
-k = cv2.waitKey(0) #待機時間、ミリ秒指定、0の場合はボタンが押されるまで待機
+    # 画像表示
+    cv2.imshow('test', img_edge)
+    k = cv2.waitKey(1) #待機時間、ミリ秒指定、0の場合はボタンが押されるまで待機
+    if k == ord('e'):
+        break
 
 cap.release()
 cv2.destroyAllWindows()
