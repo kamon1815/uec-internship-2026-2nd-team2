@@ -132,7 +132,7 @@ if ffmpeg_process is not None:
     ffmpeg_process.stdin.close()
     ffmpeg_process.wait()
     elapsed_time = time.time() - start_time
-    print(f"Encode time (" + str(vcodec) + "): " + f"{elapsed_time:.2f} sec")
+    print(f"Encode Profile (" + str(vcodec) + "): " + f"Encode time: {elapsed_time:.2f} sec /" + f" Encode Frames: {g_count} frames /" + f" Encode AVG FPS: {g_count/elapsed_time:.2f} fps")
 
 cam.endXfer()
 
