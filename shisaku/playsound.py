@@ -5,6 +5,8 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 INPUT = BASE_DIR / "sound/ドラムロール.mp3"
+
+#カレントディレクトリの移動
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def sound():
