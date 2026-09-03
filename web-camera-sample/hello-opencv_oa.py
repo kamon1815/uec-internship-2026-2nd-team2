@@ -12,7 +12,7 @@ cv2.putText(img,
             org=(350, 60),
             fontFace=cv2.FONT_HERSHEY_DUPLEX,
             fontScale=1.5,
-            color=(100, 200, 100),
+            color=(120, 200, 100),
             thickness=2,
             lineType=cv2.LINE_AA)
 
