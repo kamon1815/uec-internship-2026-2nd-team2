@@ -36,12 +36,14 @@ def get_chord_by_position_l(xl1, yl1):
     print(f"コード{chord_type}")
 
 # 右手のスピードから音の大きさを決める
-if speed > s1:
-   volume = 'big'
-elif speed < s2:
-   volume = 'small'
-else:
-   volume = 'middle'
+def get_speed(s):
+    if s > s1:
+        volume = 'big'
+    elif speed < s2:
+        volume = 'small'
+    else:
+        volume = 'middle'
+    print(f"大きさ{volume}")
 
 # 右手の基準値を決める
 # 右手の相対座標から音が鳴るタイミングを決める
@@ -54,5 +56,5 @@ relative_ry = current_ry - base_ry
 
 if (-10 <= relative_rx <= 10) & (-10 <= relative_ry <= 0):
     get_chord_by_position_l(100, 150) # 変数化
-    print(f"大きさ{volume}")
+    get_speed(50) #変数化
     
