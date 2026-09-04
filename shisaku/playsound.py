@@ -68,7 +68,7 @@ if __name__ == '__main__':
     # To decode image, get decoder obj from camera
     decoder = cam.decoder()
 
-    # GPUの接続有無をチェック？
+    # GPUの接続有無をチェック
     # If a GPU device is available, decoding is done on the GPU.
     # To setup GPU device
     reso = cam.resolution()
