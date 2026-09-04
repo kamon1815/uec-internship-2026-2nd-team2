@@ -3,6 +3,10 @@ import mediapipe as mp
 import time
 from mediapipe.tasks import python
 from mediapipe.tasks.python import vision
+import pypuclib
+from pypuclib import CameraFactory, Camera, XferData, Decoder
+from pypuclib import Resolution, PUCException, GPUSetup
+from pathlib import Path
 
 model_path = 'shisaku/hand_landmarker.task'
 
@@ -11,6 +15,26 @@ HandLandmarker = mp.tasks.vision.HandLandmarker
 HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
 HandLandmarkerResult = mp.tasks.vision.HandLandmarkerResult
 VisionRunningMode = mp.tasks.vision.RunningMode
+
+
+cam = CameraFactory().create()
+
+# To decode image, get decoder obj from camera
+decoder = cam.decoder()
+
+# If a GPU device is available, decoding is done on the GPU.
+# To setup GPU device
+reso = cam.resolution()
+GPUStatus = decoder.getAvailableGPUProcess()
+
+if GPUStatus == True:
+    param = GPUSetup(reso.width, reso.height)
+    decoder.setupGPUDecode(param)
+    print("Decode using a GPU device")
+elif GPUStatus == False:
+    print("Since GPU is not available, decode using CPU")
+
+
 
 # Create a hand landmarker instance with the live stream mode:
 current_hands = None
@@ -60,7 +84,7 @@ def draw_landmarks(image, detection_result):
     """
     if detection_result and detection_result.hand_landmarks:
         
-        image_height, image_width, _ = image.shape
+        image_height, image_width = image.shape
         
         # 検出された各手に対して処理
         for hand_landmarks in detection_result.hand_landmarks:
@@ -70,7 +94,7 @@ def draw_landmarks(image, detection_result):
                 px = int(landmark.x * image_width)
                 py = int(landmark.y * image_height)
                 # 緑色の円で描画（半径5ピクセル）
-                cv2.circle(image, (px, py), 5, (0, 255, 0), -1)
+                cv2.circle(image, (px, py), 5, (0, 255, 255), -1)
             # ランドマーク間の接続関係を定義
             connections = [
                 # 親指
@@ -107,13 +131,17 @@ def draw_landmarks(image, detection_result):
 
 
 while cap.isOpened():
-    # ウェブカメラの画像取得
-    ret, frame = cap.read() #カメラから画像取得(BGR)
-    frame = cv2.flip(frame, 1)
+    xferData = cam.grab()
+
+    # Decode the data can be used as image
+    if GPUStatus == True:
+        frame = decoder.decodeGPU(xferData, True, reso.width)
+    elif GPUStatus == False:
+        frame = decoder.decode(xferData)
+
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) #OpenCVの形式(GBR)からMediaPipeの形式(RGB)に変換
 
-    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame) #mediapipeの画像として使える塊にする。
-
+    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame) #mediapipeの画像として使える塊にする。    
     frame_timestamp = int((time.time() - start_time) * 1000) #タイムスタンプ作成
 
     landmarker.detect_async(mp_image, frame_timestamp) #手を検出
@@ -122,10 +150,13 @@ while cap.isOpened():
     print(f"手の数: {hands_count}")
     print(f"右手人差し指の位置: {get_hands_position(current_hands, 0 ,8 )}")
     draw_landmarks(frame, current_hands)
-    # 画像表示
-    cv2.imshow('test', frame)
+    frame = cv2.flip(frame,1)
+    # Show the image
+    cv2.imshow("INFINICAM", frame)
 
-    cv2.waitKey(1) #待機時間、ミリ秒指定、0の場合はボタンが押されるまで待機
+    key = cv2.waitKey(1)
+    if key & 0xFF == 27: # Esc : quit application
+        break
 
 cap.release()
 cv2.destroyAllWindows()
