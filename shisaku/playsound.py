@@ -24,6 +24,7 @@ sounds = {"drum" : INPUT1, "chime" : INPUT2}
 # Set filepath to save image
 savePath = BASE_DIR / "hello_world.bmp"
 
+#音声管理用クラス
 class sound_admin:
     def __init__(self):
         mix.init()
