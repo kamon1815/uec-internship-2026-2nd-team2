@@ -15,8 +15,9 @@ def saveBMP(img):
 BASE_DIR = Path(__file__).resolve().parent
 savePath = BASE_DIR / "hello_world.bmp"
 
-
 if __name__ == '__main__':
+    #---------------------------------
+    #カメラの準備
     print(pypuclib.__doc__)
 
     # To connect the camera first detected
@@ -36,6 +37,7 @@ if __name__ == '__main__':
         print("Decode using a GPU device")
     elif GPUStatus == False:
         print("Since GPU is not available, decode using CPU")
+    #------------------------------------
 
     print("演奏位置の設定を行います")
     print("準備ができたらEnterキーを押してください")
@@ -49,6 +51,7 @@ if __name__ == '__main__':
     print('1')
     time.sleep(1)
 
+    #初期位置取得用の画像の取得
     first_data = cam.grab()
     # Decode the data can be used as image
     if GPUStatus == True:
@@ -60,11 +63,12 @@ if __name__ == '__main__':
     #ここに処理が挟まる
     #----------------
 
-    array = cv2.putText(array, "これが初期位置です。5秒後に遷移します。", (400, 50), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255,255,255), 2, cv2.LINE_AA)
+    array = cv2.putText(array, "これが初期位置です。5秒後に遷移します。", (400, 50), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255,255,255), 2, cv2.LINE_AA) # 案内文の追加
     cv2.imshow("Setup", array)
-    cv2.waitKey(5000)
+    cv2.waitKey(5000) # 5秒待機
     cv2.destroyAllWindows()
-    
+
+    #あとはいつもの映像表示
     # Explanation
     print("press Esc to quit this application ")
     print("press 's' to save a BMP image")
