@@ -60,9 +60,9 @@ if __name__ == '__main__':
     #ここに処理が挟まる
     #----------------
 
-    array = cv2.putText(array, "これが初期位置です。3秒後に遷移します。")
+    array = cv2.putText(array, "これが初期位置です。5秒後に遷移します。", (400, 50), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255,255,255), 2, cv2.LINE_AA)
     cv2.imshow("Setup", array)
-    time.sleep(5)
+    cv2.waitKey(5000)
     cv2.destroyAllWindows()
     
     # Explanation
