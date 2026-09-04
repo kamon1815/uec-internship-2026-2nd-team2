@@ -38,7 +38,8 @@ class sound_admin:
                        "シ" : mix.Sound(INPUT_B)
                        }
         
-    def start_sound(self, select):
+    def start_sound(self, select, volume = 1):
+        self.sounds[select].set_volume = volume
         self.channel = self.sounds[select].play()
 
     def stop_sound(self, select):
