@@ -10,12 +10,39 @@ from pypuclib import Resolution, PUCException, GPUSetup
 BASE_DIR = Path(__file__).resolve().parent
 INPUT1 = BASE_DIR / "sound/ドラムロール.mp3"
 INPUT2 = BASE_DIR / "sound/放送開始チャイム.mp3"
+INPUT_C = BASE_DIR / "sound/ピアノ_ド.mp3"
+INPUT_D = BASE_DIR / "sound/ピアノ_レ.mp3"
+INPUT_E = BASE_DIR / "sound/ピアノ_ミ.mp3"
+INPUT_F = BASE_DIR / "sound/ピアノ_ファ.mp3"
+INPUT_G = BASE_DIR / "sound/ピアノ_ソ.mp3"
+INPUT_A = BASE_DIR / "sound/ピアノ_ラ.mp3"
+INPUT_B = BASE_DIR / "sound/ピアノ_シ.mp3"
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 sounds = {"drum" : INPUT1, "chime" : INPUT2}
 # Set filepath to save image
 savePath = BASE_DIR / "hello_world.bmp"
+
+class sound_admin:
+    def __init__(self):
+        mix.init()
+        self.sounds = {"drum" : mix.Sound(INPUT1),
+                       "chime" : mix.Sound(INPUT2),
+                       "ド" : mix.Sound(INPUT_C),
+                       "レ" : mix.Sound(INPUT_D),
+                       "ミ" : mix.Sound(INPUT_E),
+                       "ファ" : mix.Sound(INPUT_F),
+                       "ソ" : mix.Sound(INPUT_G),
+                       "ラ" : mix.Sound(INPUT_A),
+                       "シ" : mix.Sound(INPUT_B)
+                       }
+        
+    def start_sound(self, select):
+        self.channel = self.sounds[select].play()
+
+    def stop_sound(self, select):
+        self.sound = self.sounds[select].stop()
 
 def music():
     mix.init() #初期化
@@ -53,7 +80,7 @@ def saveBMP(img):
 
 #infinicam用
 if __name__ == '__main__':
-    mix.init()
+    sa = sound_admin()
 
     print(pypuclib.__doc__)
     # To connect the camera first detected
@@ -83,7 +110,7 @@ if __name__ == '__main__':
     print("press Esc to quit this application ")
     print("press 's' to save a BMP image")
 
-    channel = select_sound("chime")
+    #channel = select_sound("chime")
 
     while True:
         # Grab the single image data
@@ -107,9 +134,25 @@ if __name__ == '__main__':
             saveBMP(array)
         elif key & 0xFF == 27: # Esc : quit application
             break
+        elif key & 0xFF == ord('d'): # d : drum sound
+            sa.start_sound("drum")
+        elif key & 0xFF == ord('c'): # c : chime sound
+            sa.start_sound("chime")
+        elif key & 0xFF == ord('w'):
+            sa.start_sound("ド")
+        elif key & 0xFF == ord('e'):
+            sa.start_sound("レ")
+        elif key & 0xFF == ord('r'):
+            sa.start_sound("ミ")
+        elif key & 0xFF == ord('t'):
+            sa.start_sound("ファ")
+        elif key & 0xFF == ord('y'):
+            sa.start_sound("ソ")
+        elif key & 0xFF == ord('u'):
+            sa.start_sound("ラ")
+        elif key & 0xFF == ord('i'):
+            sa.start_sound("シ")
 
-        if channel.get_busy() != True:
-            channel = select_sound("drum")
             
     # Close live image window
     cv2.destroyAllWindows()
