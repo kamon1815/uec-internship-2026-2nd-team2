@@ -44,32 +44,6 @@ class sound_admin:
     def stop_sound(self, select):
         self.sound = self.sounds[select].stop()
 
-def music():
-    mix.init() #初期化
-
-    mix.music.load(INPUT1) #読み込み
-
-    mix.music.play(1) #再生
-
-    time.sleep(3)
-
-    mix.music.stop() #終了
-
-def sound():
-    mix.init()
-    sound1 = mix.Sound(INPUT1)
-    sound2 = mix.Sound(INPUT2)
-    sound1.play()
-    time.sleep(1)
-    sound2.play()
-    time.sleep(3)
-
-def select_sound(select):
-    ssound = mix.Sound(sounds[select])
-    channel = ssound.play()
-    #print(type(channel))
-    return channel
-    #time.sleep(3)
 
 # Function : Save single image as BMP 
 def saveBMP(img):
