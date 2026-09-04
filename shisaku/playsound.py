@@ -24,6 +24,7 @@ sounds = {"drum" : INPUT1, "chime" : INPUT2}
 # Set filepath to save image
 savePath = BASE_DIR / "hello_world.bmp"
 
+#音声管理用クラス
 class sound_admin:
     def __init__(self):
         mix.init()
@@ -38,7 +39,8 @@ class sound_admin:
                        "シ" : mix.Sound(INPUT_B)
                        }
         
-    def start_sound(self, select):
+    def start_sound(self, select, volume = 1):
+        self.sounds[select].set_volume = volume
         self.channel = self.sounds[select].play()
 
     def stop_sound(self, select):
@@ -68,7 +70,7 @@ if __name__ == '__main__':
     # To decode image, get decoder obj from camera
     decoder = cam.decoder()
 
-    # GPUの接続有無をチェック？
+    # GPUの接続有無をチェック
     # If a GPU device is available, decoding is done on the GPU.
     # To setup GPU device
     reso = cam.resolution()
