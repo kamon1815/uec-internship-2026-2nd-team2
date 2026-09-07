@@ -62,16 +62,11 @@ landmarker = vision.HandLandmarker.create_from_options(options)
 start_time = time.time()
 
 # 検出された手の数を取得
-def get_hands_count(result): 
+def get_hands_count(result = current_hands): 
     if result and result.hand_landmarks:
         return len(result.hand_landmarks)
     return 0
 
-# 検出された座標を取得
-def get_hands_position(result, hand_num, point_num):
-    if result and result.hand_landmarks:
-        return result.hand_landmarks[hand_num][point_num]
-    return "unknown"
 
 def draw_landmarks(image, result):
     """検出されたランドマークと骨格を描画
@@ -210,7 +205,17 @@ while True:
 
     landmarker.detect_async(mp_image, frame_timestamp) #手を検出
     draw_landmarks(frame, current_hands)
-    frame = cv2.flip(frame,1)
+
+
+    
+    finger = get_finger_position('Left', 1, current_hands)
+    if finger != []:
+        print(finger[3].x)
+    else:
+        print([])
+
+
+
     # Show the image
     cv2.imshow("INFINICAM", frame)
 
