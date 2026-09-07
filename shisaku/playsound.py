@@ -7,6 +7,8 @@ import pypuclib
 from pypuclib import CameraFactory, Camera, XferData, Decoder
 from pypuclib import Resolution, PUCException, GPUSetup
 
+#統合に必要な部分
+#-------------------------------------
 BASE_DIR = Path(__file__).resolve().parent
 INPUT1 = BASE_DIR / "sound/ドラムロール.mp3"
 INPUT2 = BASE_DIR / "sound/放送開始チャイム.mp3"
@@ -26,7 +28,7 @@ savePath = BASE_DIR / "hello_world.bmp"
 
 #音声管理用クラス
 class sound_admin:
-    def __init__(self):
+    def __init__(self, max = 6):
         mix.init()
         self.sounds = {"drum" : mix.Sound(INPUT1),
                        "chime" : mix.Sound(INPUT2),
@@ -38,8 +40,18 @@ class sound_admin:
                        "ラ" : mix.Sound(INPUT_A),
                        "シ" : mix.Sound(INPUT_B)
                        }
+        self.active_channel = []
+        self.max_channel = max
+
+    def update(self):
+        if len(self.active_channel) >= self.max_channel:
+            d_channel = self.active_channel.pop(0)
+            d_channel.stop()
         
     def start_sound(self, select, volume = 1):
+        #多重再生の管理
+        self.update()
+        
         self.sounds[select].set_volume(volume)
         self.channel = self.sounds[select].play()
 
@@ -49,6 +61,7 @@ class sound_admin:
     def stop_allsound(self):
         for value in self.sounds.values():
             value.stop()
+#-------------------------------------
 
 
 # Function : Save single image as BMP 
