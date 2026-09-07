@@ -68,33 +68,7 @@ def get_hands_count(result = current_hands):
     return 0
 
 
-
-def get_finger_position(
-    handedness, finger_num, result=current_hands
-):  # handednessには文字列（"Right" or "Left"） finger_numにはほしい指の番号(親指が0、小指が4)
-  if result and result.handedness and result.hand_landmarks:
-    landmarks = []
-    finger_positions = []
-    for i, handedness_list in enumerate(result.handedness):
-      category = handedness_list[0]
-      hand_label = category.category_name  # 'Left' または 'Right'
-      if hand_label == handedness:
-        landmarks = result.hand_landmarks[i]
-        break
-    if not landmarks:
-      return []
-
-    first_position = finger_num * 4 + 1
-
-    for i in range(first_position, first_position + 4):
-      finger_positions.append(landmarks[i])
-
-    return finger_positions
-
-  return []
-
-
-def draw_landmarks(image, result = current_hands):
+def draw_landmarks(image, result):
     """検出されたランドマークと骨格を描画
     
     Args:
@@ -111,6 +85,8 @@ def draw_landmarks(image, result = current_hands):
         
 
         # current_hands.hand_landmarks[どの手？][どの点？].度の座標系？
+
+
 
         # 検出された各手に対して処理
         for hand_landmarks in result.hand_landmarks:
@@ -154,7 +130,6 @@ def draw_landmarks(image, result = current_hands):
         return image
     return image
 
-
 print("演奏位置の設定を行います")
 while True:
     print("準備ができたらEnterキーを押してください")
@@ -193,8 +168,19 @@ while True:
     if get_hands_count(current_hands) != 2:
         print("手の読み取りに失敗しました")
         print("もう一度演奏位置の設定を行います")
-        continue    
+
+        continue
+
+    
+
     break
+
+#----------------
+#ここに処理が挟まる
+# 骨格推定の結果を画面に表示
+
+
+#----------------
 
 draw_landmarks(array, current_hands) #骨格の描画
 array = cv2.flip(array,1)
@@ -237,3 +223,5 @@ while True:
     if key & 0xFF == 27: # Esc : quit application
         break
 cv2.destroyAllWindows()
+
+
