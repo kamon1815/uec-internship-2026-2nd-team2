@@ -7,6 +7,8 @@ import pypuclib
 from pypuclib import CameraFactory, Camera, XferData, Decoder
 from pypuclib import Resolution, PUCException, GPUSetup
 from pathlib import Path
+from collections import deque
+import math
 
 model_path = 'shisaku/hand_landmarker.task'
 
@@ -55,10 +57,6 @@ options = HandLandmarkerOptions(
     result_callback=print_result)
 
 landmarker = vision.HandLandmarker.create_from_options(options)
-
-
-# result.hand_landmarks[どの手？][どの点？].どの座標系？
-
 start_time = time.time()
 
 # 検出された手の数を取得
@@ -68,7 +66,7 @@ def get_hands_count(result = current_hands):
     return 0
 
 
-
+# 指定した指の位置を取得
 def get_finger_position(
     handedness, finger_num, result=current_hands
 ):  # handednessには文字列（"Right" or "Left"） finger_numにはほしい指の番号(親指が0、小指が4)
@@ -93,17 +91,58 @@ def get_finger_position(
 
   return []
 
+hand_position_history = deque(maxlen=20)
+# 手の位置を取得（人差し指先端）
+def get_hand_position(
+    handedness, result=current_hands
+):  # handednessには文字列（"Right" or "Left"）
+  if result and result.handedness and result.hand_landmarks:
+    for i, handedness_list in enumerate(result.handedness):
+      category = handedness_list[0]
+      hand_label = category.category_name  # 'Left' または 'Right'
+      if hand_label == handedness:
+        return result.hand_landmarks[i][8]
+  return []
 
+# 手（人差指先端の移動量を計算）
+def get_moved_distance():
+    hand_position_history_list = list(hand_position_history)
+    first = hand_position_history_list[:10]
+    last = hand_position_history_list[-10:]
+
+    if first and last:
+        first_x = []
+        for c in first:
+            if c:
+                first_x.append(c[0])
+        first_y = []
+        for c in first:
+            if c:
+                first_y.append(c[1])
+        len_first = len(first_x)
+
+        last_x = []
+        for c in last:
+            if c:
+                last_x.append(c[0])
+        last_y = []
+        for c in last:
+            if c:
+                last_y.append(c[1])
+        len_last = len(last_x)
+        if first_x and last_x:
+            first_avg_x = sum(first_x)/len_first
+            first_avg_y = sum(first_y)/len_first
+            last_avg_x = sum(last_x)/len_last
+            last_avg_y = sum(last_y)/len_last
+            return [last_avg_x - first_avg_x, last_avg_y - first_avg_y]
+
+    return [0,0]
+
+                
+
+# 骨格の描画
 def draw_landmarks(image, result = current_hands):
-    """検出されたランドマークと骨格を描画
-    
-    Args:
-        image: 描画対象の画像（RGB形式）
-        result: MediaPipeの検出結果
-    
-    Returns:
-        ランドマークと骨格が描画された画像
-    """
     if result and result.hand_landmarks:
         if len(image.shape) == 2:
             image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
@@ -191,7 +230,7 @@ while True:
 
     # もし手が２本なかったらやり直し
     if get_hands_count(current_hands) != 2:
-        print("手の読み取りに失敗しました")
+        print(f"手の読み取りに失敗しました（検出された手の数: {get_hands_count()}）")
         print("もう一度演奏位置の設定を行います")
         continue    
     break
@@ -218,17 +257,18 @@ while True:
     frame_timestamp = int((time.time() - start_time) * 1000) #タイムスタンプ作成
 
     landmarker.detect_async(mp_image, frame_timestamp) #手を検出
-    draw_landmarks(frame, current_hands)
-
-
-    
-    finger = get_finger_position('Left', 1, current_hands)
-    if finger != []:
-        print(finger[3].x)
+    draw_landmarks(frame, current_hands) #骨格に色付け
+    # 検出結果を記録
+    if current_hands is not None:
+        hand_postion = get_hand_position('Right', current_hands)
+        if hand_postion:
+            hand_position_history.append([hand_postion.x, hand_postion.y])
+        else:
+            hand_position_history.append([])
     else:
-        print([])
-
-
+        hand_position_history.append([])
+    # 移動量を出力
+    print(get_moved_distance())
 
     # Show the image
     cv2.imshow("INFINICAM", frame)
