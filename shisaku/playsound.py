@@ -46,6 +46,10 @@ class sound_admin:
     def stop_sound(self, select):
         self.sound = self.sounds[select].stop()
 
+    def stop_allsound(self):
+        for value in self.sounds.values():
+            value.stop()
+
 
 # Function : Save single image as BMP 
 def saveBMP(img):
