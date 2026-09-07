@@ -68,33 +68,7 @@ def get_hands_count(result = current_hands):
     return 0
 
 
-
-def get_finger_position(
-    handedness, finger_num, result=current_hands
-):  # handednessには文字列（"Right" or "Left"） finger_numにはほしい指の番号(親指が0、小指が4)
-  if result and result.handedness and result.hand_landmarks:
-    landmarks = []
-    finger_positions = []
-    for i, handedness_list in enumerate(result.handedness):
-      category = handedness_list[0]
-      hand_label = category.category_name  # 'Left' または 'Right'
-      if hand_label == handedness:
-        landmarks = result.hand_landmarks[i]
-        break
-    if not landmarks:
-      return []
-
-    first_position = finger_num * 4 + 1
-
-    for i in range(first_position, first_position + 4):
-      finger_positions.append(landmarks[i])
-
-    return finger_positions
-
-  return []
-
-
-def draw_landmarks(image, result = current_hands):
+def draw_landmarks(image, result):
     """検出されたランドマークと骨格を描画
     
     Args:
@@ -111,6 +85,8 @@ def draw_landmarks(image, result = current_hands):
         
 
         # current_hands.hand_landmarks[どの手？][どの点？].度の座標系？
+
+
 
         # 検出された各手に対して処理
         for hand_landmarks in result.hand_landmarks:
@@ -154,54 +130,64 @@ def draw_landmarks(image, result = current_hands):
         return image
     return image
 
+print("演奏位置の設定を行います")
+while True:
+    print("準備ができたらEnterキーを押してください")
+    print("押した3秒後の手の位置を基準の位置とします")
+    input("Are you OK?>>")
 
-# print("演奏位置の設定を行います")
-# while True:
-#     print("準備ができたらEnterキーを押してください")
-#     print("押した3秒後の手の位置を基準の位置とします")
-#     input("Are you OK?>>")
+    print("3")
+    time.sleep(1)
+    print('2')
+    time.sleep(1)
+    print('1')
+    time.sleep(1)
 
-#     print("3")
-#     time.sleep(1)
-#     print('2')
-#     time.sleep(1)
-#     print('1')
-#     time.sleep(1)
-
-#     #初期位置取得用の画像の取得
-#     first_data = cam.grab()
+    #初期位置取得用の画像の取得
+    first_data = cam.grab()
     
-#     # Decode the data can be used as image
-#     if GPUStatus == True:
-#         array = decoder.decodeGPU(first_data, True, reso.width)
-#     elif GPUStatus == False:
-#         array = decoder.decode(first_data)
+    # Decode the data can be used as image
+    if GPUStatus == True:
+        array = decoder.decodeGPU(first_data, True, reso.width)
+    elif GPUStatus == False:
+        array = decoder.decode(first_data)
     
-#     array = cv2.cvtColor(array, cv2.COLOR_GRAY2BGR)
+    array = cv2.cvtColor(array, cv2.COLOR_GRAY2BGR)
 
 
-#     # 骨格推定
-#     rgb_frame = cv2.cvtColor(array, cv2.COLOR_BGR2RGB) #OpenCVの形式(GBR)からMediaPipeの形式(RGB)に変換 
+    # 骨格推定
+    rgb_frame = cv2.cvtColor(array, cv2.COLOR_BGR2RGB) #OpenCVの形式(GBR)からMediaPipeの形式(RGB)に変換 
 
-#     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame) #mediapipeの画像として使える塊にする。    
-#     frame_timestamp = int((time.time() - start_time) * 1000) #タイムスタンプ作成
-#     landmarker.detect_async(mp_image, frame_timestamp) #手を検出
+    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame) #mediapipeの画像として使える塊にする。    
+    frame_timestamp = int((time.time() - start_time) * 1000) #タイムスタンプ作成
+    landmarker.detect_async(mp_image, frame_timestamp) #手を検出
 
-#     time.sleep(0.2)
+    time.sleep(0.2)
 
-#     # もし手が２本なかったらやり直し
-#     if get_hands_count(current_hands) != 2:
-#         print("手の読み取りに失敗しました")
-#         print("もう一度演奏位置の設定を行います")
-#         continue    
-#     break
+    # もし手が２本なかったらやり直し
+    if get_hands_count(current_hands) != 2:
+        print("手の読み取りに失敗しました")
+        print("もう一度演奏位置の設定を行います")
 
-# draw_landmarks(array, current_hands) #骨格の描画
-# array = cv2.flip(array,1)
-# array = cv2.putText(array, "これが初期位置です。5秒後に遷移します。", (400, 50), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255,255,255), 2, cv2.LINE_AA) # 案内文の追加
-# cv2.imshow("Setup", array)
-# cv2.waitKey(5000) # 5秒待機
-# cv2.destroyAllWindows()
+        continue
+
+    
+
+    break
+
+#----------------
+#ここに処理が挟まる
+# 骨格推定の結果を画面に表示
+
+
+#----------------
+
+draw_landmarks(array, current_hands) #骨格の描画
+array = cv2.flip(array,1)
+array = cv2.putText(array, "これが初期位置です。5秒後に遷移します。", (400, 50), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255,255,255), 2, cv2.LINE_AA) # 案内文の追加
+cv2.imshow("Setup", array)
+cv2.waitKey(5000) # 5秒待機
+cv2.destroyAllWindows()
 
 while True:
     xferData = cam.grab()
@@ -237,3 +223,5 @@ while True:
     if key & 0xFF == 27: # Esc : quit application
         break
 cv2.destroyAllWindows()
+
+

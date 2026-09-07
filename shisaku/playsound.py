@@ -10,13 +10,13 @@ from pypuclib import Resolution, PUCException, GPUSetup
 BASE_DIR = Path(__file__).resolve().parent
 INPUT1 = BASE_DIR / "sound/ドラムロール.mp3"
 INPUT2 = BASE_DIR / "sound/放送開始チャイム.mp3"
-INPUT_C = BASE_DIR / "sound/ピアノ_ド.mp3"
-INPUT_D = BASE_DIR / "sound/ピアノ_レ.mp3"
-INPUT_E = BASE_DIR / "sound/ピアノ_ミ.mp3"
-INPUT_F = BASE_DIR / "sound/ピアノ_ファ.mp3"
-INPUT_G = BASE_DIR / "sound/ピアノ_ソ.mp3"
-INPUT_A = BASE_DIR / "sound/ピアノ_ラ.mp3"
-INPUT_B = BASE_DIR / "sound/ピアノ_シ.mp3"
+INPUT_C = BASE_DIR / "sound/C.wav"
+INPUT_D = BASE_DIR / "sound/D.wav"
+INPUT_E = BASE_DIR / "sound/E.wav"
+INPUT_F = BASE_DIR / "sound/F.wav"
+INPUT_G = BASE_DIR / "sound/G.wav"
+INPUT_A = BASE_DIR / "sound/A.wav"
+INPUT_B = BASE_DIR / "sound/B.wav"
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -24,6 +24,7 @@ sounds = {"drum" : INPUT1, "chime" : INPUT2}
 # Set filepath to save image
 savePath = BASE_DIR / "hello_world.bmp"
 
+#音声管理用クラス
 class sound_admin:
     def __init__(self):
         mix.init()
@@ -38,11 +39,16 @@ class sound_admin:
                        "シ" : mix.Sound(INPUT_B)
                        }
         
-    def start_sound(self, select):
+    def start_sound(self, select, volume = 1):
+        self.sounds[select].set_volume(volume)
         self.channel = self.sounds[select].play()
 
     def stop_sound(self, select):
         self.sound = self.sounds[select].stop()
+
+    def stop_allsound(self):
+        for value in self.sounds.values():
+            value.stop()
 
 
 # Function : Save single image as BMP 
@@ -55,6 +61,7 @@ def saveBMP(img):
 #infinicam用
 if __name__ == '__main__':
     sa = sound_admin()
+    sound_volume = 1.0
 
     print(pypuclib.__doc__)
     # To connect the camera first detected
@@ -68,7 +75,7 @@ if __name__ == '__main__':
     # To decode image, get decoder obj from camera
     decoder = cam.decoder()
 
-    # GPUの接続有無をチェック？
+    # GPUの接続有無をチェック
     # If a GPU device is available, decoding is done on the GPU.
     # To setup GPU device
     reso = cam.resolution()
@@ -113,20 +120,33 @@ if __name__ == '__main__':
         elif key & 0xFF == ord('c'): # c : chime sound
             sa.start_sound("chime")
         elif key & 0xFF == ord('w'):
-            sa.start_sound("ド")
+            sa.start_sound("ド", sound_volume)
         elif key & 0xFF == ord('e'):
-            sa.start_sound("レ")
+            sa.start_sound("レ", sound_volume)
         elif key & 0xFF == ord('r'):
-            sa.start_sound("ミ")
+            sa.start_sound("ミ", sound_volume)
         elif key & 0xFF == ord('t'):
-            sa.start_sound("ファ")
+            sa.start_sound("ファ", sound_volume)
         elif key & 0xFF == ord('y'):
-            sa.start_sound("ソ")
+            sa.start_sound("ソ", sound_volume)
         elif key & 0xFF == ord('u'):
-            sa.start_sound("ラ")
+            sa.start_sound("ラ", sound_volume)
         elif key & 0xFF == ord('i'):
-            sa.start_sound("シ")
-
+            sa.start_sound("シ", sound_volume)
+        elif key & 0xFF == ord('v'):
+            if sound_volume >= 0.1:
+                sound_volume -= 0.1
+                print(f"volume: {sound_volume:.1f}")
+            else:
+                print("これ以上小さくできません")
+        elif key & 0xFF == ord('b'):
+            if sound_volume <=0.9:
+                sound_volume += 0.1
+                print(f"volume: {sound_volume:.1f}")
+            else:
+                print("これ以上大きくできません")
+        elif key & 0xFF == ord('k'):
+            sa.stop_allsound()
             
     # Close live image window
     cv2.destroyAllWindows()
