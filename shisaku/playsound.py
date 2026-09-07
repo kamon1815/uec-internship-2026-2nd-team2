@@ -10,13 +10,13 @@ from pypuclib import Resolution, PUCException, GPUSetup
 BASE_DIR = Path(__file__).resolve().parent
 INPUT1 = BASE_DIR / "sound/ドラムロール.mp3"
 INPUT2 = BASE_DIR / "sound/放送開始チャイム.mp3"
-INPUT_C = BASE_DIR / "sound/ピアノ_ド.mp3"
-INPUT_D = BASE_DIR / "sound/ピアノ_レ.mp3"
-INPUT_E = BASE_DIR / "sound/ピアノ_ミ.mp3"
-INPUT_F = BASE_DIR / "sound/ピアノ_ファ.mp3"
-INPUT_G = BASE_DIR / "sound/ピアノ_ソ.mp3"
-INPUT_A = BASE_DIR / "sound/ピアノ_ラ.mp3"
-INPUT_B = BASE_DIR / "sound/ピアノ_シ.mp3"
+INPUT_C = BASE_DIR / "sound/C.wav"
+INPUT_D = BASE_DIR / "sound/D.wav"
+INPUT_E = BASE_DIR / "sound/E.wav"
+INPUT_F = BASE_DIR / "sound/F.wav"
+INPUT_G = BASE_DIR / "sound/G.wav"
+INPUT_A = BASE_DIR / "sound/A.wav"
+INPUT_B = BASE_DIR / "sound/B.wav"
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
