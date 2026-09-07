@@ -155,53 +155,53 @@ def draw_landmarks(image, result = current_hands):
     return image
 
 
-# print("演奏位置の設定を行います")
-# while True:
-#     print("準備ができたらEnterキーを押してください")
-#     print("押した3秒後の手の位置を基準の位置とします")
-#     input("Are you OK?>>")
+print("演奏位置の設定を行います")
+while True:
+    print("準備ができたらEnterキーを押してください")
+    print("押した3秒後の手の位置を基準の位置とします")
+    input("Are you OK?>>")
 
-#     print("3")
-#     time.sleep(1)
-#     print('2')
-#     time.sleep(1)
-#     print('1')
-#     time.sleep(1)
+    print("3")
+    time.sleep(1)
+    print('2')
+    time.sleep(1)
+    print('1')
+    time.sleep(1)
 
-#     #初期位置取得用の画像の取得
-#     first_data = cam.grab()
+    #初期位置取得用の画像の取得
+    first_data = cam.grab()
     
-#     # Decode the data can be used as image
-#     if GPUStatus == True:
-#         array = decoder.decodeGPU(first_data, True, reso.width)
-#     elif GPUStatus == False:
-#         array = decoder.decode(first_data)
+    # Decode the data can be used as image
+    if GPUStatus == True:
+        array = decoder.decodeGPU(first_data, True, reso.width)
+    elif GPUStatus == False:
+        array = decoder.decode(first_data)
     
-#     array = cv2.cvtColor(array, cv2.COLOR_GRAY2BGR)
+    array = cv2.cvtColor(array, cv2.COLOR_GRAY2BGR)
 
 
-#     # 骨格推定
-#     rgb_frame = cv2.cvtColor(array, cv2.COLOR_BGR2RGB) #OpenCVの形式(GBR)からMediaPipeの形式(RGB)に変換 
+    # 骨格推定
+    rgb_frame = cv2.cvtColor(array, cv2.COLOR_BGR2RGB) #OpenCVの形式(GBR)からMediaPipeの形式(RGB)に変換 
 
-#     mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame) #mediapipeの画像として使える塊にする。    
-#     frame_timestamp = int((time.time() - start_time) * 1000) #タイムスタンプ作成
-#     landmarker.detect_async(mp_image, frame_timestamp) #手を検出
+    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame) #mediapipeの画像として使える塊にする。    
+    frame_timestamp = int((time.time() - start_time) * 1000) #タイムスタンプ作成
+    landmarker.detect_async(mp_image, frame_timestamp) #手を検出
 
-#     time.sleep(0.2)
+    time.sleep(0.2)
 
-#     # もし手が２本なかったらやり直し
-#     if get_hands_count(current_hands) != 2:
-#         print("手の読み取りに失敗しました")
-#         print("もう一度演奏位置の設定を行います")
-#         continue    
-#     break
+    # もし手が２本なかったらやり直し
+    if get_hands_count(current_hands) != 2:
+        print("手の読み取りに失敗しました")
+        print("もう一度演奏位置の設定を行います")
+        continue    
+    break
 
-# draw_landmarks(array, current_hands) #骨格の描画
-# array = cv2.flip(array,1)
-# array = cv2.putText(array, "これが初期位置です。5秒後に遷移します。", (400, 50), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255,255,255), 2, cv2.LINE_AA) # 案内文の追加
-# cv2.imshow("Setup", array)
-# cv2.waitKey(5000) # 5秒待機
-# cv2.destroyAllWindows()
+draw_landmarks(array, current_hands) #骨格の描画
+array = cv2.flip(array,1)
+array = cv2.putText(array, "これが初期位置です。5秒後に遷移します。", (400, 50), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255,255,255), 2, cv2.LINE_AA) # 案内文の追加
+cv2.imshow("Setup", array)
+cv2.waitKey(5000) # 5秒待機
+cv2.destroyAllWindows()
 
 while True:
     xferData = cam.grab()
