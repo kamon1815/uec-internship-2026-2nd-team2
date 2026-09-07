@@ -40,7 +40,7 @@ class sound_admin:
                        }
         
     def start_sound(self, select, volume = 1):
-        self.sounds[select].set_volume = volume
+        self.sounds[select].set_volume(volume)
         self.channel = self.sounds[select].play()
 
     def stop_sound(self, select):
@@ -57,6 +57,7 @@ def saveBMP(img):
 #infinicam用
 if __name__ == '__main__':
     sa = sound_admin()
+    sound_volume = 1.0
 
     print(pypuclib.__doc__)
     # To connect the camera first detected
@@ -115,20 +116,31 @@ if __name__ == '__main__':
         elif key & 0xFF == ord('c'): # c : chime sound
             sa.start_sound("chime")
         elif key & 0xFF == ord('w'):
-            sa.start_sound("ド")
+            sa.start_sound("ド", sound_volume)
         elif key & 0xFF == ord('e'):
-            sa.start_sound("レ")
+            sa.start_sound("レ", sound_volume)
         elif key & 0xFF == ord('r'):
-            sa.start_sound("ミ")
+            sa.start_sound("ミ", sound_volume)
         elif key & 0xFF == ord('t'):
-            sa.start_sound("ファ")
+            sa.start_sound("ファ", sound_volume)
         elif key & 0xFF == ord('y'):
-            sa.start_sound("ソ")
+            sa.start_sound("ソ", sound_volume)
         elif key & 0xFF == ord('u'):
-            sa.start_sound("ラ")
+            sa.start_sound("ラ", sound_volume)
         elif key & 0xFF == ord('i'):
-            sa.start_sound("シ")
-
+            sa.start_sound("シ", sound_volume)
+        elif key & 0xFF == ord('v'):
+            if sound_volume >= 0.1:
+                sound_volume -= 0.1
+                print(f"volume: {sound_volume:.1f}")
+            else:
+                print("これ以上小さくできません")
+        elif key & 0xFF == ord('b'):
+            if sound_volume <=0.9:
+                sound_volume += 0.1
+                print(f"volume: {sound_volume:.1f}")
+            else:
+                print("これ以上大きくできません")
             
     # Close live image window
     cv2.destroyAllWindows()
