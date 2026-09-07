@@ -67,27 +67,6 @@ def get_hands_count(result = current_hands):
         return len(result.hand_landmarks)
     return 0
 
-# 指定されたの指の座標を取得
-def get_finger_position(handedness, finger_num, result = current_hands): #handednessには文字列（"Right" or "Left"） finger_numにはほしい指の番号(親指が0、小指が4)
-    if result and result.handedness and result.hand_landmarks:
-        landmarks = []
-        finger_positions = []
-        for i, handedness_list in enumerate(result.handedness):
-            category = handedness_list[0]
-            hand_label = category.category_name  # 'Left' または 'Right'
-            if hand_label == handedness:
-                landmarks = result.hand_landmarks[i]
-                break
-        if not landmarks:
-            print(f"デバッグ: 画面内に '{handedness}' の手は検出されませんでした。")
-            return []
-        first_position = finger_num*4+1
-        for i in range (first_position, first_position+3):
-            finger_positions.append(landmarks[i])
-
-        return result
-    return []
-
 
 
 def get_finger_position(
@@ -240,7 +219,17 @@ while True:
 
     landmarker.detect_async(mp_image, frame_timestamp) #手を検出
     draw_landmarks(frame, current_hands)
-    print(get_finger_position("Left",1,current_hands))
+
+
+    
+    finger = get_finger_position('Left', 1, current_hands)
+    if finger != []:
+        print(finger[3].x)
+    else:
+        print([])
+
+
+
     # Show the image
     cv2.imshow("INFINICAM", frame)
 
