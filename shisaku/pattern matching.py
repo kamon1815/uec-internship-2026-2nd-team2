@@ -5,8 +5,11 @@ import openvino as ov
 from pathlib import Path
 from pypuclib import CameraFactory
 
-
 MODE = "npu_fp16"   
+
+DEVICE, PRECISION = {"cpu_fp32": ("CPU", "f32"),
+                     "gpu_fp16": ("GPU", "f16"),
+                     "npu_fp16": ("NPU", "f16")}[MODE]
 # 画像の読み込み
 # カメラ
 cap = cv2.VideoCapture(0) # webカメラ
@@ -38,10 +41,17 @@ print(f"使えるデバイス: {core.available_devices}")
 # decoder = cam.decoder()
 # W, H = cam.resolution().width, cam.resolution().height
 # USE_GPU_DECODE = decoder.getAvailableGPUProcess()     # CUDA専用。無ければCPUデコード
-img = cv2.imread('cap')
-code_A = cv2.imread('codetype/コードA.jpg')
-code_D = cv2.imread('codetype/コードD.jpg')
-code_E = cv2.imread('codetype/コードE.jpg')
+img = cap
+BASE_DIR = Path(__file__).resolve().parent
+
+code_A = BASE_DIR / "codetype/コードA.jpg"
+code_D = BASE_DIR / "codetype/コードD.jpg"
+code_E = BASE_DIR / "codetype/コードE.jpg"
+
+if code_A is None:
+    print("エラー: 画像ファイルが見つからないか、読み込めませんでした。パスを確認してください。")
+else:
+    print("画像の読み込みに成功しました。")
 
 # グレースケール
 img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -78,10 +88,6 @@ for x, y in zip():
         thickness=2,
     )
 
-
-ys, xs = np.where(result_A >= 0.9)
-ys, xs = np.where(result_D >= 0.9)
-ys, xs = np.where(result_E >= 0.9)
 
 colorize = True
 fps, t_prev = 0.0, time.perf_counter()
