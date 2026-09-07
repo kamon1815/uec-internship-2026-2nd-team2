@@ -145,6 +145,8 @@ if __name__ == '__main__':
                 print(f"volume: {sound_volume:.1f}")
             else:
                 print("これ以上大きくできません")
+        elif key & 0xFF == ord('k'):
+            sa.stop_allsound()
             
     # Close live image window
     cv2.destroyAllWindows()
