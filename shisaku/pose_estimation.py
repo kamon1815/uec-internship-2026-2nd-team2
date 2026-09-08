@@ -228,11 +228,11 @@ while True:
 
     time.sleep(0.2)
 
-    # もし手が２本なかったらやり直し
-    if get_hands_count(current_hands) != 2:
-        print(f"手の読み取りに失敗しました（検出された手の数: {get_hands_count()}）")
-        print("もう一度演奏位置の設定を行います")
-        continue    
+    # # もし手が２本なかったらやり直し
+    # if get_hands_count(current_hands) != 2:
+    #     print("手の読み取りに失敗しました")
+    #     print("もう一度演奏位置の設定を行います")
+    #     continue    
     break
 
 draw_landmarks(array, current_hands) #骨格の描画

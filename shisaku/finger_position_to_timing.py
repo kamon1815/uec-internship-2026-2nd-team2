@@ -22,21 +22,16 @@ def get_chord_by_position_l(xl1, yl1):
     print(f"コード{chord_type}")
 
 # 得られる座標
-data = """
-NormalizedLandmark(x=0.5428542494773865, y=0.4200127422809601, z=0.04844113066792488, visibility=None, presence=None, name=None),
-NormalizedLandmark(x=0.5870059728622437, y=0.41215941309928894, z=0.0647120550274849, visibility=None, presence=None, name=None),
-NormalizedLandmark(x=0.6176277995109558, y=0.40548330545425415, z=0.06839596480131149, visibility=None, presence=None, name=None),
-NormalizedLandmark(x=0.6388885974884033, y=0.39930304884910583, z=0.06845066696405411, visibility=None, presence=None, name=None)
-"""
-finger = get_finger_position('Right', 1)
-base_rx = finger[3].x
-base_ry = finger[3].y
+
+base_rx = None
+base_ry = None
 
 # 座標取得
-def get_finger(data):
+def get_finger():
 
-    finger = get_finger_position('Right', 1)
-    if base_rx == None:
+    finger = pose_estimation.get_finger_position('Right', 1)
+    global base_rx, base_ry
+    if base_rx is None:
         base_rx = finger[3].x
         base_ry = finger[3].y
 
@@ -46,8 +41,9 @@ def get_finger(data):
     relative_rx = current_rx - base_rx
     relative_ry = current_ry - base_ry
     print(f"{relative_rx}, {relative_ry}")
+    return relative_rx, relative_ry
 
 while True:
-    get_finger(data)
-    if (-10 <= relative_rx <= 10) & (-10 <= relative_ry <= 0):
+    relative_rx, relative_ry = get_finger()
+    if (-0.05 <= relative_rx <= 0.05) & (-0.05 <= relative_ry <= 0.05):
         get_chord_by_position_l(100, 150) # 変数化
