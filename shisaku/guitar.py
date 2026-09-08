@@ -57,4 +57,3 @@ relative_ry = current_ry - base_ry
 if (-10 <= relative_rx <= 10) & (-10 <= relative_ry <= 0):
     get_chord_by_position_l(100, 150) # 変数化
     get_speed(50) #変数化
-    
