@@ -8,7 +8,6 @@ from pypuclib import CameraFactory, Camera, XferData, Decoder
 from pypuclib import Resolution, PUCException, GPUSetup
 from pathlib import Path
 from collections import deque
-import math
 
 model_path = 'shisaku/hand_landmarker.task'
 
@@ -41,10 +40,10 @@ elif GPUStatus == False:
 # Create a hand landmarker instance with the live stream mode:
 current_hands = None
 
-def print_result(result: HandLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
+def print_result(result, output_image: mp.Image, timestamp_ms: int):
     global current_hands
     current_hands = result
-    # print('hand landmarker result: {}'.format(result))
+    print(f'hand landmarker result: {result}')
 
 base_options = python.BaseOptions(model_asset_path=str(model_path))
 
@@ -92,6 +91,7 @@ def get_finger_position(
   return []
 
 hand_position_history = deque(maxlen=20)
+
 # 手の位置を取得（人差し指先端）
 def get_hand_position(
     handedness, result=current_hands
@@ -193,7 +193,6 @@ def draw_landmarks(image, result = current_hands):
         return image
     return image
 
-
 print("演奏位置の設定を行います")
 while True:
     print("準備ができたらEnterキーを押してください")
@@ -258,6 +257,7 @@ while True:
 
     landmarker.detect_async(mp_image, frame_timestamp) #手を検出
     draw_landmarks(frame, current_hands) #骨格に色付け
+        
     # 検出結果を記録
     if current_hands is not None:
         hand_postion = get_hand_position('Right', current_hands)
@@ -267,8 +267,6 @@ while True:
             hand_position_history.append([])
     else:
         hand_position_history.append([])
-    # 移動量を出力
-    print(get_moved_distance())
 
     # Show the image
     cv2.imshow("INFINICAM", frame)
