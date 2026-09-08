@@ -7,8 +7,10 @@ import pypuclib
 from pypuclib import CameraFactory, Camera, XferData, Decoder
 from pypuclib import Resolution, PUCException, GPUSetup
 from pathlib import Path
+#import pygame.mixer as mix
+from playsound import sound_admin
 
-model_path = 'shisaku/hand_landmarker.task'
+model_path = 'hand_landmarker.task'
 
 BaseOptions = mp.tasks.BaseOptions
 HandLandmarker = mp.tasks.vision.HandLandmarker
@@ -154,86 +156,143 @@ def draw_landmarks(image, result = current_hands):
         return image
     return image
 
-
-print("演奏位置の設定を行います")
-while True:
-    print("準備ができたらEnterキーを押してください")
-    print("押した3秒後の手の位置を基準の位置とします")
-    input("Are you OK?>>")
-
-    print("3")
-    time.sleep(1)
-    print('2')
-    time.sleep(1)
-    print('1')
-    time.sleep(1)
-
-    #初期位置取得用の画像の取得
-    first_data = cam.grab()
-    
-    # Decode the data can be used as image
-    if GPUStatus == True:
-        array = decoder.decodeGPU(first_data, True, reso.width)
-    elif GPUStatus == False:
-        array = decoder.decode(first_data)
-    
-    array = cv2.cvtColor(array, cv2.COLOR_GRAY2BGR)
-
-
-    # 骨格推定
-    rgb_frame = cv2.cvtColor(array, cv2.COLOR_BGR2RGB) #OpenCVの形式(GBR)からMediaPipeの形式(RGB)に変換 
-
-    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame) #mediapipeの画像として使える塊にする。    
-    frame_timestamp = int((time.time() - start_time) * 1000) #タイムスタンプ作成
-    landmarker.detect_async(mp_image, frame_timestamp) #手を検出
-
-    time.sleep(0.2)
-
-    # # もし手が２本なかったらやり直し
-    # if get_hands_count(current_hands) != 2:
-    #     print("手の読み取りに失敗しました")
-    #     print("もう一度演奏位置の設定を行います")
-    #     continue    
-    break
-
-draw_landmarks(array, current_hands) #骨格の描画
-array = cv2.flip(array,1)
-array = cv2.putText(array, "これが初期位置です。5秒後に遷移します。", (400, 50), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255,255,255), 2, cv2.LINE_AA) # 案内文の追加
-cv2.imshow("Setup", array)
-cv2.waitKey(5000) # 5秒待機
-cv2.destroyAllWindows()
-
-while True:
-    xferData = cam.grab()
-
-    # Decode the data can be used as image
-    if GPUStatus == True:
-        frame = decoder.decodeGPU(xferData, True, reso.width)
-    elif GPUStatus == False:
-        frame = decoder.decode(xferData)
-    frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
-    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) #OpenCVの形式(GBR)からMediaPipeの形式(RGB)に変換
-
-    mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame) #mediapipeの画像として使える塊にする。    
-    frame_timestamp = int((time.time() - start_time) * 1000) #タイムスタンプ作成
-
-    landmarker.detect_async(mp_image, frame_timestamp) #手を検出
-    draw_landmarks(frame, current_hands)
-
-
-    
-    finger = get_finger_position('Left', 1, current_hands)
-    if finger != []:
-        print(finger[3].x)
+def get_chord_by_position_l(xl1, yl1):
+    # テスト (座標)
+    base_lx = 100 # 変数化
+    base_ly = 200
+    current_lx = 207
+    current_ly = 290
+    relative_lx = current_lx - base_lx
+    relative_ly = current_ly - base_ly
+    # 指の座標でコードを決める
+    if (0 <= relative_lx < 200) & (0 <= relative_ly < 200): # 範囲の決定
+        chord_type = "ラ"
+    elif (200 <= relative_lx < 400) & (200 <= relative_ly < 400):
+        chord_type = "レ"
+    elif (400 <= relative_lx < 600) & (400 <= relative_ly < 600):
+        chord_type = "ミ"
     else:
-        print([])
+        print('コードがわかりません')
+        print(f"左手の相対座標:({relative_lx}, {relative_ly})")
+        return 
+
+    print(f"コード{chord_type}")
+    return chord_type
+
+def get_finger():
+
+    finger = get_finger_position('Right', 1, current_hands)
+    if finger is None:
+        print("読み取れませんでした")
+        return -1, -1
+    global base_rx, base_ry
+    if base_rx is None:
+        base_rx = finger[3].x
+        base_ry = finger[3].y
+
+    current_rx = finger[3].x
+    current_ry = finger[3].y
+
+    relative_rx = current_rx - base_rx
+    relative_ry = current_ry - base_ry
+    print(f"{relative_rx}, {relative_ry}")
+    return relative_rx, relative_ry
+
+if __name__ == '__main__':
+    sa = sound_admin()
+    print("演奏位置の設定を行います")
+    while True:
+        print("準備ができたらEnterキーを押してください")
+        print("押した3秒後の手の位置を基準の位置とします")
+        input("Are you OK?>>")
+
+        print("3")
+        time.sleep(1)
+        print('2')
+        time.sleep(1)
+        print('1')
+        time.sleep(1)
+
+        #初期位置取得用の画像の取得
+        first_data = cam.grab()
+        
+        # Decode the data can be used as image
+        if GPUStatus == True:
+            array = decoder.decodeGPU(first_data, True, reso.width)
+        elif GPUStatus == False:
+            array = decoder.decode(first_data)
+        
+        array = cv2.cvtColor(array, cv2.COLOR_GRAY2BGR)
 
 
+        # 骨格推定
+        rgb_frame = cv2.cvtColor(array, cv2.COLOR_BGR2RGB) #OpenCVの形式(GBR)からMediaPipeの形式(RGB)に変換 
 
-    # Show the image
-    cv2.imshow("INFINICAM", frame)
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame) #mediapipeの画像として使える塊にする。    
+        frame_timestamp = int((time.time() - start_time) * 1000) #タイムスタンプ作成
+        landmarker.detect_async(mp_image, frame_timestamp) #手を検出
 
-    key = cv2.waitKey(1)
-    if key & 0xFF == 27: # Esc : quit application
+        time.sleep(0.2)
+
+        # # もし手が２本なかったらやり直し
+        # if get_hands_count(current_hands) != 2:
+        #     print("手の読み取りに失敗しました")
+        #     print("もう一度演奏位置の設定を行います")
+        #     continue    
         break
-cv2.destroyAllWindows()
+
+    draw_landmarks(array, current_hands) #骨格の描画
+    array = cv2.flip(array,1)
+    array = cv2.putText(array, "これが初期位置です。5秒後に遷移します。", (400, 50), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255,255,255), 2, cv2.LINE_AA) # 案内文の追加
+    cv2.imshow("Setup", array)
+    cv2.waitKey(5000) # 5秒待機
+    cv2.destroyAllWindows()
+
+    base_rx = None
+    base_ry = None
+    while True:
+        xferData = cam.grab()
+
+        # Decode the data can be used as image
+        if GPUStatus == True:
+            frame = decoder.decodeGPU(xferData, True, reso.width)
+        elif GPUStatus == False:
+            frame = decoder.decode(xferData)
+        frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) #OpenCVの形式(GBR)からMediaPipeの形式(RGB)に変換
+
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame) #mediapipeの画像として使える塊にする。    
+        frame_timestamp = int((time.time() - start_time) * 1000) #タイムスタンプ作成
+
+        landmarker.detect_async(mp_image, frame_timestamp) #手を検出
+        draw_landmarks(frame, current_hands)
+
+
+        relative_rx, relative_ry = get_finger()
+        if (-0.05 <= relative_rx <= 0.05) & (-0.05 <= relative_ry <= 0.05):
+            chord = get_chord_by_position_l(100, 150) # 変数化
+            sa.start_sound(chord)
+
+        
+        # finger = get_finger_position('Left', 1, current_hands)
+        # if finger != []:
+        #     print(finger[3].x)
+        # else:
+        #     print([])
+
+
+
+        # Show the image
+        cv2.imshow("INFINICAM", frame)
+
+        key = cv2.waitKey(1)
+        if key & 0xFF == 27: # Esc : quit application
+            break
+    cv2.destroyAllWindows()
+    # print(current_hands)
+
+
+    # while True:
+    #     relative_rx, relative_ry = get_finger()
+    #     if (-0.05 <= relative_rx <= 0.05) & (-0.05 <= relative_ry <= 0.05):
+    #         get_chord_by_position_l(100, 150) # 変数化
