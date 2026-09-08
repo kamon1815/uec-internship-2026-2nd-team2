@@ -7,6 +7,7 @@ import pypuclib
 from pypuclib import CameraFactory, Camera, XferData, Decoder
 from pypuclib import Resolution, PUCException, GPUSetup
 from pathlib import Path
+from collections import deque
 #import pygame.mixer as mix
 from playsound import sound_admin
 
@@ -37,11 +38,16 @@ elif GPUStatus == False:
     print("Since GPU is not available, decode using CPU")
 
 
-
-# Create a hand landmarker instance with the live stream mode:
+# グローバル変数
 current_hands = None
+hand_position_history = deque(maxlen=20)
+base_rx = None
+base_ry = None
+was_on_guitar = 0
 
-def print_result(result: HandLandmarkerResult, output_image: mp.Image, timestamp_ms: int):
+
+
+def print_result(result, output_image: mp.Image, timestamp_ms: int):
     global current_hands
     current_hands = result
     # print('hand landmarker result: {}'.format(result))
@@ -57,10 +63,6 @@ options = HandLandmarkerOptions(
     result_callback=print_result)
 
 landmarker = vision.HandLandmarker.create_from_options(options)
-
-
-# result.hand_landmarks[どの手？][どの点？].どの座標系？
-
 start_time = time.time()
 
 # 検出された手の数を取得
@@ -70,7 +72,7 @@ def get_hands_count(result = current_hands):
     return 0
 
 
-
+# 指定した指の位置を取得
 def get_finger_position(
     handedness, finger_num, result=current_hands
 ):  # handednessには文字列（"Right" or "Left"） finger_numにはほしい指の番号(親指が0、小指が4)
@@ -96,16 +98,57 @@ def get_finger_position(
   return []
 
 
+# 手の位置を取得（人差し指先端）
+def get_hand_position(
+    handedness, result=current_hands
+):  # handednessには文字列（"Right" or "Left"）
+  if result and result.handedness and result.hand_landmarks:
+    for i, handedness_list in enumerate(result.handedness):
+      category = handedness_list[0]
+      hand_label = category.category_name  # 'Left' または 'Right'
+      if hand_label == handedness:
+        return result.hand_landmarks[i][8]
+  return []
+
+# 手（人差指先端の移動量を計算）
+def get_moved_distance():
+    hand_position_history_list = list(hand_position_history)
+    first = hand_position_history_list[:10]
+    last = hand_position_history_list[-10:]
+
+    if first and last:
+        first_x = []
+        for c in first:
+            if c:
+                first_x.append(c[0])
+        first_y = []
+        for c in first:
+            if c:
+                first_y.append(c[1])
+        len_first = len(first_x)
+
+        last_x = []
+        for c in last:
+            if c:
+                last_x.append(c[0])
+        last_y = []
+        for c in last:
+            if c:
+                last_y.append(c[1])
+        len_last = len(last_x)
+        if first_x and last_x:
+            first_avg_x = sum(first_x)/len_first
+            first_avg_y = sum(first_y)/len_first
+            last_avg_x = sum(last_x)/len_last
+            last_avg_y = sum(last_y)/len_last
+            return [last_avg_x - first_avg_x, last_avg_y - first_avg_y]
+
+    return [0,0]
+
+                
+
+# 骨格の描画
 def draw_landmarks(image, result = current_hands):
-    """検出されたランドマークと骨格を描画
-    
-    Args:
-        image: 描画対象の画像（RGB形式）
-        result: MediaPipeの検出結果
-    
-    Returns:
-        ランドマークと骨格が描画された画像
-    """
     if result and result.hand_landmarks:
         if len(image.shape) == 2:
             image = cv2.cvtColor(image, cv2.COLOR_GRAY2BGR)
@@ -179,27 +222,33 @@ def get_chord_by_position_l(xl1, yl1):
     print(f"コード{chord_type}")
     return chord_type
 
-def get_finger():
-
-    finger = get_finger_position('Right', 1, current_hands)
-    if finger is None:
-        print("読み取れませんでした")
-        return -1, -1
+def get_hand_relative_position(): #基準点(base_rx,base_ry)に対する現在の指の相対位置を取得
+    hand_position = get_hand_position('Right', current_hands)
+    if hand_position == []:
+        # print("読み取れませんでした")
+        return -2, -2, 0
     global base_rx, base_ry
     if base_rx is None:
-        base_rx = finger[3].x
-        base_ry = finger[3].y
+        base_rx = hand_position.x
+        base_ry = hand_position.y
 
-    current_rx = finger[3].x
-    current_ry = finger[3].y
+    current_rx = hand_position.x
+    current_ry = hand_position.y
 
     relative_rx = current_rx - base_rx
     relative_ry = current_ry - base_ry
-    print(f"{relative_rx}, {relative_ry}")
-    return relative_rx, relative_ry
+
+    is_on_guitar = (-0.1 <= relative_rx <= 0.1) & (-0.1 <= relative_ry <= 0.1)
+
+    # print(f"{relative_rx}, {relative_ry}")
+    return relative_rx, relative_ry, is_on_guitar
+
+    
+
 
 if __name__ == '__main__':
     sa = sound_admin()
+
     print("演奏位置の設定を行います")
     while True:
         print("準備ができたらEnterキーを押してください")
@@ -231,8 +280,9 @@ if __name__ == '__main__':
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame) #mediapipeの画像として使える塊にする。    
         frame_timestamp = int((time.time() - start_time) * 1000) #タイムスタンプ作成
         landmarker.detect_async(mp_image, frame_timestamp) #手を検出
-
         time.sleep(0.2)
+        # 右手の相対位置を保存
+        get_hand_relative_position()
 
         # # もし手が２本なかったらやり直し
         # if get_hands_count(current_hands) != 2:
@@ -248,8 +298,6 @@ if __name__ == '__main__':
     cv2.waitKey(5000) # 5秒待機
     cv2.destroyAllWindows()
 
-    base_rx = None
-    base_ry = None
     while True:
         xferData = cam.grab()
 
@@ -265,34 +313,35 @@ if __name__ == '__main__':
         frame_timestamp = int((time.time() - start_time) * 1000) #タイムスタンプ作成
 
         landmarker.detect_async(mp_image, frame_timestamp) #手を検出
-        draw_landmarks(frame, current_hands)
+        draw_landmarks(frame, current_hands) #骨格に色付け
 
-
-        relative_rx, relative_ry = get_finger()
-        if (-0.05 <= relative_rx <= 0.05) & (-0.05 <= relative_ry <= 0.05):
-            chord = get_chord_by_position_l(100, 150) # 変数化
-            sa.start_sound(chord)
+        # 検出結果を記録
+        if current_hands is not None:
+            hand_postion = get_hand_position('Right', current_hands)
+            if hand_postion:
+                hand_position_history.append([hand_postion.x, hand_postion.y])
+            else:
+                hand_position_history.append([])
+        else:
+            hand_position_history.append([])
 
         
-        # finger = get_finger_position('Left', 1, current_hands)
-        # if finger != []:
-        #     print(finger[3].x)
-        # else:
-        #     print([])
-
-
+        # 相対座標の取得
+        relative_rx, relative_ry, is_on_guitar = get_hand_relative_position()
+        if (was_on_guitar == 0) and (is_on_guitar == 1):
+            print("再生中")
+            chord = get_chord_by_position_l(100, 150) # 変数化
+            sa.start_sound(chord)
+        else:
+            print("再生条件を満たしていません")
+        was_on_guitar = is_on_guitar 
+            
 
         # Show the image
+        frame = cv2.flip(frame, 1)
         cv2.imshow("INFINICAM", frame)
 
         key = cv2.waitKey(1)
         if key & 0xFF == 27: # Esc : quit application
             break
     cv2.destroyAllWindows()
-    # print(current_hands)
-
-
-    # while True:
-    #     relative_rx, relative_ry = get_finger()
-    #     if (-0.05 <= relative_rx <= 0.05) & (-0.05 <= relative_ry <= 0.05):
-    #         get_chord_by_position_l(100, 150) # 変数化
