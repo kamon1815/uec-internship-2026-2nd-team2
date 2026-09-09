@@ -25,8 +25,8 @@ from PIL import Image, ImageTk # need to import extra module "pip install pillow
 class Application(tk.Frame):
     def __init__(self, master = None):
         super().__init__(master)
-        master.title("gui_sample")
-        master.geometry("800x600")
+        master.title("air guitar")
+        master.geometry("1000x800")
         master.bind("<KeyPress>", self.press_key)
         self.pack(expand=1, fill=tk.BOTH, anchor=tk.NW)
 
