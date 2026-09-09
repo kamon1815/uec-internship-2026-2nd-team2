@@ -49,7 +49,7 @@ class Application(tk.Frame):
         self.font = tkfont.Font(self,family="Arial",size=10,weight="bold")
         self.recent_sound = ""
         self.s_volume = 1.0
-        self.t=0 #確認用
+        #self.t=0 #確認用
 
         self.createWidget()
 
@@ -199,9 +199,6 @@ class Application(tk.Frame):
         was_on_guitar = is_on_guitar 
         #初期位置の描画
         array = draw_start_position(array)
-        if self.t==0:
-            cv2.imshow("test", array)
-            self.t=1
 
         #PILオブジェクトに変換してサイズを調整
         i = Image.fromarray(array).resize((int(w*scale), int(h*scale)))
@@ -631,6 +628,7 @@ if __name__ == '__main__':
         #webcam用
         cap = cv2.VideoCapture(0)
         ret, array = cap.read()
+        height, width, _ = array.shape
 
         #INFINICAM用
         '''
@@ -664,8 +662,8 @@ if __name__ == '__main__':
         #     continue    
         break
 
-    draw_landmarks(array, current_hands) #骨格の描画
     draw_start_position(array)
+    draw_landmarks(array, current_hands) #骨格の描画
     array = cv2.flip(array,1)
     array = cv2.putText(array, "これが初期位置です。5秒後に遷移します。", (400, 50), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255,255,255), 2, cv2.LINE_AA) # 案内文の追加
     cv2.imshow("Setup", array)
