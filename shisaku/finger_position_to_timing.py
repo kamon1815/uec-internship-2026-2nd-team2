@@ -38,6 +38,7 @@ def get_hand_relative_position():
     current_rx = finger[3].x
     current_ry = finger[3].y
 
+
     relative_rx = current_rx - base_rx
     relative_ry = current_ry - base_ry
     print(f"{relative_rx}, {relative_ry}")

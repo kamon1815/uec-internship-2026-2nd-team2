@@ -16,22 +16,21 @@ ly3 = None
 
 # 座標取得
 def get_lefthand_potions():
-    finger = pose_estimation.get_finger_position('Left', 1)
-    global lx1, ly1, lx2, ly2, lx3, ly3
-    lx1 = finger[3].x
-    ly1 = finger[3].y
-
-    finger = pose_estimation.get_finger_position('Left', 2)
-    
-    lx2 = finger[3].x
-    ly2 = finger[3].y
-
-    finger = pose_estimation.get_finger_position('Left', 3)
-    
-    lx3 = finger[3].x
-    ly3 = finger[3].y
-    print(lx1, ly1, lx2, ly2, lx3, ly3)
-    return(lx1, ly1, lx2, ly2, lx3, ly3)
+    finger1 = pose_estimation.get_finger_position('Left', 1, pose_estimation.current_hands)
+    finger2 = pose_estimation.get_finger_position('Left', 2, pose_estimation.current_hands)
+    finger3 = pose_estimation.get_finger_position('Left', 3, pose_estimation.current_hands)
+    if (finger1 is not []) & (finger2 is not []) & (finger3 is not []):
+        global lx1, ly1, lx2, ly2, lx3, ly3
+        lx1 = finger1[3].x
+        ly1 = finger1[3].y
+        lx2 = finger2[3].x
+        ly2 = finger2[3].y
+        lx3 = finger3[3].x
+        ly3 = finger3[3].y
+        print(lx1, ly1, lx2, ly2, lx3, ly3)
+        return(lx1, ly1, lx2, ly2, lx3, ly3)
+    else :
+        return(0, 0, 0, 0, 0, 0)
     
 
 # コード判定
@@ -48,15 +47,18 @@ def decide_code(lx1, ly1, lx2, ly2, lx3, ly3):
 
     # 三角形の面積
     area = abs(cross_product) / 2
+    print(area)
 
-    if -0.01 < area < 0.01:
+    if -0.002 < area < 0.002:
         print("コードA")
+        return("ラ")
     else:
         print("コードD")
         print("コードE")
-
+        return("ド")
 
 
 while True:
     lx1, ly1, lx2, ly2, lx3, ly3 = get_lefthand_potions()
     decide_code(lx1, ly1, lx2, ly2, lx3, ly3)
+    # get_lefthand_potions()

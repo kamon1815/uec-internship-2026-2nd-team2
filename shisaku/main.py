@@ -49,6 +49,12 @@ RANGE_X = 0.1
 RANGE_Y = 0.1
 height = 0
 width = 0
+lx1 = None
+ly1 = None
+lx2 = None
+ly2 = None
+lx3 = None
+ly3 = None
 
 
 def print_result(result, output_image: mp.Image, timestamp_ms: int):
@@ -255,6 +261,49 @@ def get_hand_relative_position(): #基準点(base_rx,base_ry)に対する現在�
     is_on_guitar = (-RANGE_X <= relative_rx <= RANGE_X) & (-RANGE_Y <= relative_ry <= RANGE_Y)
     return relative_rx, relative_ry, is_on_guitar
 
+# 座標取得
+def get_lefthand_potions():
+    finger1 = get_finger_position('Left', 1, current_hands)
+    finger2 = get_finger_position('Left', 2, current_hands)
+    finger3 = get_finger_position('Left', 3, current_hands)
+    if (finger1 is not []) & (finger2 is not []) & (finger3 is not []):
+        global lx1, ly1, lx2, ly2, lx3, ly3
+        lx1 = finger1[3].x
+        ly1 = finger1[3].y
+        lx2 = finger2[3].x
+        ly2 = finger2[3].y
+        lx3 = finger3[3].x
+        ly3 = finger3[3].y
+        print(lx1, ly1, lx2, ly2, lx3, ly3)
+        return(lx1, ly1, lx2, ly2, lx3, ly3)
+    else :
+        return(0, 0, 0, 0, 0, 0)
+    
+
+# コード判定
+def decide_code(lx1, ly1, lx2, ly2, lx3, ly3):
+    # 指間の距離
+    dist_12 = math.hypot(lx2 - lx1, ly2 - ly1)
+    dist_23 = math.hypot(lx3 - lx2, ly3 - ly2)
+    dist_31 = math.hypot(lx1 - lx3, ly1 - ly3)
+    print('距離')
+    print(dist_12, dist_23, dist_31)
+
+    # 外積
+    cross_product = (lx2 - lx1) * (ly3 - ly1) - (ly2 - ly1) * (lx3 - lx1)
+
+    # 三角形の面積
+    area = abs(cross_product) / 2
+    print(area)
+
+    if -0.0005 < area < 0.0005:
+        print("コードラ")
+        return("ラ")
+    else:
+        print("コードD")
+        print("コードE")
+        return("ド")
+
 
 if __name__ == '__main__':
     sa = sound_admin()
@@ -274,7 +323,7 @@ if __name__ == '__main__':
 
         #初期位置取得用の画像の取得
         first_data = cam.grab()
-        height, width, _ = first_data.shape
+        
 
         # Decode the data can be used as image
         if GPUStatus == True:
@@ -283,7 +332,7 @@ if __name__ == '__main__':
             array = decoder.decode(first_data)
         
         array = cv2.cvtColor(array, cv2.COLOR_GRAY2BGR)
-
+        height, width, _ = array.shape
 
         # 骨格推定
         rgb_frame = cv2.cvtColor(array, cv2.COLOR_BGR2RGB) #OpenCVの形式(GBR)からMediaPipeの形式(RGB)に変換 
@@ -339,8 +388,10 @@ if __name__ == '__main__':
         
         # 相対座標の取得
         relative_rx, relative_ry, is_on_guitar = get_hand_relative_position()
-        if (was_on_guitar == 0) and (is_on_guitar == 1):
-            chord = get_chord_by_position_l(100, 150) # 変数化
+        if (was_on_guitar == 0) and (is_on_guitar == 1) and (get_hands_count(current_hands) == 2):
+            # chord = get_chord_by_position_l(100, 150) # 変数化
+            lx1, ly1, lx2, ly2, lx3, ly3 = get_lefthand_potions()
+            chord = decide_code(lx1, ly1, lx2, ly2, lx3, ly3)
             sa.start_sound(chord)
 
         was_on_guitar = is_on_guitar
