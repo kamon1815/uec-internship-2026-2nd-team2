@@ -68,6 +68,7 @@ class Application(tk.Frame):
         super().__init__(master)
         master.title("gui_sample")
         master.geometry("800x600")
+        #キーバインド
         master.bind("<KeyPress>", self.press_key)
         self.pack(expand=1, fill=tk.BOTH, anchor=tk.NW)
 
@@ -205,10 +206,11 @@ class Application(tk.Frame):
         
 
         #webcam用
-        array = data
+        array = cv2.cvtColor(data, cv2.COLOR_BGR2RGB)
         #INFINICAM用
         #array = self.decoder.decode(data)
-        array = cv2.cvtColor(array, cv2.COLOR_RGB2BGR)
+        #arrya = cv2.cvtColor(array, cv2.COLOR_GRAY2RGB)
+
         #PILオブジェクトに変換してサイズを調整
         i = Image.fromarray(array).resize((int(w*scale), int(h*scale)))
         self.img = ImageTk.PhotoImage(image=i)#PILオブジェクトをtkinterで表示できる形に変換
@@ -261,7 +263,8 @@ class Application(tk.Frame):
     #------------------------------------------------------
 
 #実行部分
-root = tk.Tk()
-app = Application(master = root)
-app.mainloop()
-#root.terminate()
+if __name__ == '__main__':
+    root = tk.Tk()
+    app = Application(master = root)
+    app.mainloop()
+    #root.terminate()
