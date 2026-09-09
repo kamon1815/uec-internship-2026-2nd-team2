@@ -296,13 +296,18 @@ def decide_code(lx1, ly1, lx2, ly2, lx3, ly3):
     area = abs(cross_product) / 2
     print(area)
 
-    if -0.0005 < area < 0.0005:
-        print("コードラ")
+    if 0.15 < dist_31:
+        print("コードA")
         return("ラ")
-    else:
+    elif 0.2 > dist_23:
         print("コードD")
-        print("コードE")
-        return("ド")
+        return("ミ")
+    # elif (ly2 < ly1) & (ly2 < ly3):
+    #     print("コードD")
+    #     return("ド")
+    # elif (ly2 > ly1) & (ly2 > ly3):
+    #     print("コードE")
+    #     return("ミ")
 
 
 if __name__ == '__main__':
