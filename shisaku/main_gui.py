@@ -254,6 +254,116 @@ class Application(tk.Frame):
         self.s_admin.stop_sound(select)
     #------------------------------------------------------
 
+class SetApplication(tk.Frame):
+    def __init__(self, master = None):
+        super().__init__(master)
+        master.title("Setup")
+        master.geometry("1000x800")
+        #master.bind("<KeyPress>", self.press_key)
+        self.pack(expand=1, fill=tk.BOTH, anchor=tk.NW)
+
+        #webcam
+        self.cap = cv2.VideoCapture(0)
+
+        #INFINICAM
+        '''
+        self.cam = CameraFactory().create()
+        self.fcreator = None
+        self.decoder = self.cam.decoder()
+        '''
+
+        self.font = tkfont.Font(self,family="Arial",size=10,weight="bold")
+        self.message = tk.StringVar()
+        self.message.set("初期位置の設定をします。両手でギターを持つように構えてください")
+
+        #self.t=0動作確認
+
+        self.createWidget()
+        
+        self.delay = 15
+        self.updateID = 0
+        self.update()
+
+    def createWidget(self):
+        #---------------------------------------------------
+        # option Frame
+        #---------------------------------------------------
+        frameWidth=300
+        frameHeight=100
+        self.optionFrame = ttk.LabelFrame(self, 
+                                          text="explanation", 
+                                          width=frameWidth,
+                                          height=frameHeight,
+                                          relief=tk.RAISED)
+        self.optionFrame.propagate(False)
+        self.optionFrame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
+
+        #---------------------------------------------------
+        # explain text
+        #---------------------------------------------------
+        #説明文の作成
+        self.explainPanel = ttk.Frame(self.optionFrame,
+                                        width=frameWidth,
+                                        height=frameHeight,
+                                        relief=tk.FLAT)
+        self.explainPanel.propagate(False)
+        self.explainPanel.pack(anchor=tk.S, fill=tk.BOTH, padx=5, pady=5)
+        #フレーム内に配置するラベルの作成、配置
+        self.explainLabel = ttk.Label(self.explainPanel,textvariable=self.message, width=60, anchor=tk.CENTER,font=("Arial", 20))
+        self.explainLabel.pack(side=tk.TOP,expand=True, fill=tk.BOTH, padx=20)
+
+        #---------------------------------------------------
+        # canvas
+        #---------------------------------------------------
+        self.canvas = tk.Canvas(self, width=1296, height=1080)
+        self.canvas.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+    def update(self):
+        #webcam
+        ret, data = self.cap.read()
+        #INFINICAM
+        #data = self.cam.grab()
+        data = cv2.cvtColor(data, cv2.COLOR_RGB2BGR)
+        self.updatecanvas(data)
+        self.updateID = self.after(self.delay, self.update)
+        self.t+=1
+        if self.t==100:
+            self.updatetext("時間経過")
+        elif self.t == 200:
+            self.quit()
+
+    def updatecanvas(self, data):
+        cw = self.canvas.winfo_width()
+        ch = self.canvas.winfo_height()
+        h, w, _ = data.shape
+        '''
+        w = data.resolution().width
+        h = data.resolution().height
+        '''
+        scale = 1
+        if cw > 1 and ch > 1:
+            scale = cw/w if cw/w < ch/h else ch/h   
+
+        #webcam
+        array = data
+        #INFINICAM
+        #array = self.decoder.decode(data)
+        #PILオブジェクトに変換してサイズを調整
+        i = Image.fromarray(array).resize((int(w*scale), int(h*scale)))
+        self.img = ImageTk.PhotoImage(image=i)#PILオブジェクトをtkinterで表示できる形に変換
+        self.canvas.delete("all")#前の画像を削除
+        pos = [(cw-i.width)/2,(ch-i.height)/2]#位置の設定
+        self.canvas.create_image(pos[0], pos[1], anchor="nw", image=self.img)
+        self.canvas.create_text(pos[0]+5, pos[1]+5, anchor="nw", 
+                                text="test",
+                                font=self.font, fill="limeGreen")
+
+    def updatetext(self, text):
+        self.message.set(text)
+
+    def resettext(self):
+        self.message.set("初期位置の設定をします。両手でギターを持つように構えてください")
+
 model_path = 'hand_landmarker.task'
 
 BaseOptions = mp.tasks.BaseOptions
