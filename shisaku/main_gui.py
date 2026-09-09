@@ -8,6 +8,7 @@ from pypuclib import CameraFactory, Camera, XferData, Decoder
 from pypuclib import Resolution, PUCException, GPUSetup
 from pathlib import Path
 from collections import deque
+import math
 #import pygame.mixer as mix
 from playsound import sound_admin
 
@@ -25,8 +26,8 @@ from PIL import Image, ImageTk # need to import extra module "pip install pillow
 class Application(tk.Frame):
     def __init__(self, master = None):
         super().__init__(master)
-        master.title("gui_sample")
-        master.geometry("800x600")
+        master.title("air guitar")
+        master.geometry("1000x800")
         master.bind("<KeyPress>", self.press_key)
         self.pack(expand=1, fill=tk.BOTH, anchor=tk.NW)
 
@@ -48,6 +49,7 @@ class Application(tk.Frame):
         self.font = tkfont.Font(self,family="Arial",size=10,weight="bold")
         self.recent_sound = ""
         self.s_volume = 1.0
+        #self.t=0 #確認用
 
         self.createWidget()
 
@@ -192,9 +194,11 @@ class Application(tk.Frame):
             print("再生中")
             chord = get_chord_by_position_l(100, 150) # 変数化
             self.start_sound(chord)
-        else:
-            print("再生条件を満たしていません")
+        #else:
+            #print("再生条件を満たしていません")
         was_on_guitar = is_on_guitar 
+        #初期位置の描画
+        array = draw_start_position(array)
 
         #PILオブジェクトに変換してサイズを調整
         i = Image.fromarray(array).resize((int(w*scale), int(h*scale)))
@@ -247,6 +251,150 @@ class Application(tk.Frame):
         self.s_admin.stop_sound(select)
     #------------------------------------------------------
 
+class SetApplication(tk.Frame):
+    def __init__(self, master = None):
+        super().__init__(master)
+        master.title("Setup")
+        master.geometry("1000x800")
+        #master.bind("<KeyPress>", self.press_key)
+        self.pack(expand=1, fill=tk.BOTH, anchor=tk.NW)
+
+        #webcam
+        self.cap = cv2.VideoCapture(0)
+
+        #INFINICAM
+        '''
+        self.cam = CameraFactory().create()
+        self.fcreator = None
+        self.decoder = self.cam.decoder()
+        '''
+
+        self.font = tkfont.Font(self,family="Arial",size=10,weight="bold")
+        self.message = tk.StringVar()
+        self.message.set("初期位置の設定をします。両手でギターを持つように構えてください。")
+        self.starttime = 0
+        self.endflag = False
+        self.handflag = False
+
+        #self.t=0動作確認
+
+        self.createWidget()
+        
+        self.delay = 15
+        self.updateID = 0
+        self.update()
+
+    def createWidget(self):
+        #---------------------------------------------------
+        # option Frame
+        #---------------------------------------------------
+        frameWidth=300
+        frameHeight=100
+        self.optionFrame = ttk.LabelFrame(self, 
+                                          text="explanation", 
+                                          width=frameWidth,
+                                          height=frameHeight,
+                                          relief=tk.RAISED)
+        self.optionFrame.propagate(False)
+        self.optionFrame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
+
+        #---------------------------------------------------
+        # explain text
+        #---------------------------------------------------
+        #説明文の作成
+        self.explainPanel = ttk.Frame(self.optionFrame,
+                                        width=frameWidth,
+                                        height=frameHeight,
+                                        relief=tk.FLAT)
+        self.explainPanel.propagate(False)
+        self.explainPanel.pack(anchor=tk.S, fill=tk.BOTH, padx=5, pady=5)
+        #フレーム内に配置するラベルの作成、配置
+        self.explainLabel = ttk.Label(self.explainPanel,textvariable=self.message, width=60, anchor=tk.CENTER,font=("Arial", 20))
+        self.explainLabel.pack(side=tk.TOP,expand=True, fill=tk.BOTH, padx=20)
+
+        #---------------------------------------------------
+        # canvas
+        #---------------------------------------------------
+        self.canvas = tk.Canvas(self, width=1296, height=1080)
+        self.canvas.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+    def update(self):
+        #webcam
+        ret, data = self.cap.read()
+        #INFINICAM
+        #data = self.cam.grab()
+        data = cv2.cvtColor(data, cv2.COLOR_RGB2BGR)
+        self.updatecanvas(data)
+        if self.endflag == False:
+            self.updateID = self.after(self.delay, self.update)
+        else:
+            self.master.destroy()
+            #self.quit()
+
+    def updatecanvas(self, data):
+        cw = self.canvas.winfo_width()
+        ch = self.canvas.winfo_height()
+        h, w, _ = data.shape
+        '''
+        w = data.resolution().width
+        h = data.resolution().height
+        '''
+        scale = 1
+        if cw > 1 and ch > 1:
+            scale = cw/w if cw/w < ch/h else ch/h   
+
+        #webcam
+        array = data
+        #INFINICAM
+        #array = self.decoder.decode(data)
+
+        #骨格推定
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=array) #mediapipeの画像として使える塊にする。    
+        frame_timestamp = int((time.time() - start_time) * 1000) #タイムスタンプ作成
+                
+        landmarker.detect_async(mp_image, frame_timestamp) #手を検出
+        draw_landmarks(array, current_hands) #骨格に色付け
+
+        if get_hands_count(current_hands) == 2:
+            if self.handflag == False:
+                self.starttime = time.time()
+                self.updatetext("そのまま維持してください。3秒後に初期位置が決まります。")
+                self.handflag = True
+            elif (time.time() - self.starttime) >= 3:
+                global height, width
+                height, width, _ = array.shape
+                get_hand_relative_position()
+                self.endflag = True
+                self.terminate()
+            else:
+                t = int(time.time() - self.starttime)
+                self.updatetext(f"そのまま維持してください。{3-t}秒後に初期位置が決まります。")
+        else:
+            if self.handflag == True:
+                self.updatetext("読み取りに失敗しました。もう一度お願いします。")
+                self.handflag = False
+        
+        #PILオブジェクトに変換してサイズを調整
+        i = Image.fromarray(array).resize((int(w*scale), int(h*scale)))
+        self.img = ImageTk.PhotoImage(image=i)#PILオブジェクトをtkinterで表示できる形に変換
+        self.canvas.delete("all")#前の画像を削除
+        pos = [(cw-i.width)/2,(ch-i.height)/2]#位置の設定
+        self.canvas.create_image(pos[0], pos[1], anchor="nw", image=self.img)
+        self.canvas.create_text(pos[0]+5, pos[1]+5, anchor="nw", 
+                                text="test",
+                                font=self.font, fill="limeGreen")
+
+    def updatetext(self, text):
+        self.message.set(text)
+
+    def resettext(self):
+        self.message.set("初期位置の設定をします。両手でギターを持つように構えてください")
+
+    def terminate(self):
+        self.after_cancel(self.updateID)
+        self.cap.release()
+        #self.cam.close() # INFINICAM
+
 model_path = 'hand_landmarker.task'
 
 BaseOptions = mp.tasks.BaseOptions
@@ -281,7 +429,10 @@ hand_position_history = deque(maxlen=20)
 base_rx = None
 base_ry = None
 was_on_guitar = 0
-
+RANGE_X = 0.1
+RANGE_Y = 0.1
+height = 0
+width = 0
 
 
 def print_result(result, output_image: mp.Image, timestamp_ms: int):
@@ -350,8 +501,8 @@ def get_hand_position(
 # 手（人差指先端の移動量を計算）
 def get_moved_distance():
     hand_position_history_list = list(hand_position_history)
-    first = hand_position_history_list[:10]
-    last = hand_position_history_list[-10:]
+    first = hand_position_history_list[:3]
+    last = hand_position_history_list[-3:]
 
     if first and last:
         first_x = []
@@ -378,9 +529,12 @@ def get_moved_distance():
             first_avg_y = sum(first_y)/len_first
             last_avg_x = sum(last_x)/len_last
             last_avg_y = sum(last_y)/len_last
-            return [last_avg_x - first_avg_x, last_avg_y - first_avg_y]
+            diff_x = last_avg_x - first_avg_x
+            diff_y = last_avg_y - first_avg_y
+            distance = math.sqrt(diff_x**2 + diff_y**2)
+            return [diff_x, diff_y, distance]
 
-    return [0,0]
+    return [0,0,0]
 
                 
 
@@ -436,6 +590,13 @@ def draw_landmarks(image, result = current_hands):
         return image
     return image
 
+def draw_start_position(img):
+    global width, height
+    if base_rx is not None:
+        return cv2.rectangle(img, (int((base_rx-RANGE_X)*width), int((base_ry-RANGE_Y)*height)), (int((base_rx+RANGE_X)*width), int((base_ry+RANGE_Y)*height)), (255, 0, 0), 2)
+    else:
+        return img
+
 def get_chord_by_position_l(xl1, yl1):
     # テスト (座標)
     base_lx = 100 # 変数化
@@ -475,17 +636,16 @@ def get_hand_relative_position(): #基準点(base_rx,base_ry)に対する現在�
     relative_rx = current_rx - base_rx
     relative_ry = current_ry - base_ry
 
-    is_on_guitar = (-0.1 <= relative_rx <= 0.1) & (-0.1 <= relative_ry <= 0.1)
-
-    # print(f"{relative_rx}, {relative_ry}")
+    is_on_guitar = (-RANGE_X <= relative_rx <= RANGE_X) & (-RANGE_Y <= relative_ry <= RANGE_Y)
     return relative_rx, relative_ry, is_on_guitar
+
 
     
 
 
 if __name__ == '__main__':
     #sa = sound_admin()
-
+    '''
     print("演奏位置の設定を行います")
     while True:
         print("準備ができたらEnterキーを押してください")
@@ -502,20 +662,22 @@ if __name__ == '__main__':
         #webcam用
         cap = cv2.VideoCapture(0)
         ret, array = cap.read()
+        height, width, _ = array.shape
 
         #INFINICAM用
-        '''
+        
         #初期位置取得用の画像の取得
         first_data = cam.grab()
         
         # Decode the data can be used as image
-        if GPUStatus == True:
-            array = decoder.decodeGPU(first_data, True, reso.width)
-        elif GPUStatus == False:
-            array = decoder.decode(first_data)
+        #if GPUStatus == True:
+        #    array = decoder.decodeGPU(first_data, True, reso.width)
+        #elif GPUStatus == False:
+        #    array = decoder.decode(first_data)
         
-        array = cv2.cvtColor(array, cv2.COLOR_GRAY2BGR)
-        '''
+        #array = cv2.cvtColor(array, cv2.COLOR_GRAY2BGR)
+        
+        
 
 
         # 骨格推定
@@ -535,6 +697,7 @@ if __name__ == '__main__':
         #     continue    
         break
 
+    draw_start_position(array)
     draw_landmarks(array, current_hands) #骨格の描画
     array = cv2.flip(array,1)
     array = cv2.putText(array, "これが初期位置です。5秒後に遷移します。", (400, 50), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255,255,255), 2, cv2.LINE_AA) # 案内文の追加
@@ -542,6 +705,12 @@ if __name__ == '__main__':
     cv2.waitKey(5000) # 5秒待機
     cv2.destroyAllWindows()
     cap.release()
+    '''
+    setroot = tk.Tk()
+    setapp = SetApplication(master=setroot)
+    setapp.mainloop()
+
+    time.sleep(0.5)
 
     root = tk.Tk()
     app = Application(master = root)
