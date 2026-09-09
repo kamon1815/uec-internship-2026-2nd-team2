@@ -10,6 +10,7 @@ from pathlib import Path
 from collections import deque
 #import pygame.mixer as mix
 from playsound import sound_admin
+import math
 
 model_path = 'hand_landmarker.task'
 
@@ -40,11 +41,14 @@ elif GPUStatus == False:
 
 # グローバル変数
 current_hands = None
-hand_position_history = deque(maxlen=20)
+hand_position_history = deque(maxlen=6)
 base_rx = None
 base_ry = None
 was_on_guitar = 0
-
+RANGE_X = 0.1
+RANGE_Y = 0.1
+height = 0
+width = 0
 
 
 def print_result(result, output_image: mp.Image, timestamp_ms: int):
@@ -113,8 +117,8 @@ def get_hand_position(
 # 手（人差指先端の移動量を計算）
 def get_moved_distance():
     hand_position_history_list = list(hand_position_history)
-    first = hand_position_history_list[:10]
-    last = hand_position_history_list[-10:]
+    first = hand_position_history_list[:3]
+    last = hand_position_history_list[-3:]
 
     if first and last:
         first_x = []
@@ -141,11 +145,14 @@ def get_moved_distance():
             first_avg_y = sum(first_y)/len_first
             last_avg_x = sum(last_x)/len_last
             last_avg_y = sum(last_y)/len_last
-            return [last_avg_x - first_avg_x, last_avg_y - first_avg_y]
+            diff_x = last_avg_x - first_avg_x
+            diff_y = last_avg_y - first_avg_y
+            distance = math.sqrt(diff_x**2 + diff_y**2)
+            return [diff_x, diff_y, distance]
 
-    return [0,0]
+    return [0,0,0]
 
-                
+
 
 # 骨格の描画
 def draw_landmarks(image, result = current_hands):
@@ -199,6 +206,13 @@ def draw_landmarks(image, result = current_hands):
         return image
     return image
 
+def draw_start_position(img):
+    global width, height
+    if base_rx is not None:
+        return cv2.rectangle(img, (int((base_rx-RANGE_X)*width), int((base_ry-RANGE_Y)*height)), (int((base_rx+RANGE_X)*width), int((base_ry+RANGE_Y)*height)), (255, 0, 0), 2)
+    else:
+        return img
+
 def get_chord_by_position_l(xl1, yl1):
     # テスト (座標)
     base_lx = 100 # 変数化
@@ -238,12 +252,8 @@ def get_hand_relative_position(): #基準点(base_rx,base_ry)に対する現在�
     relative_rx = current_rx - base_rx
     relative_ry = current_ry - base_ry
 
-    is_on_guitar = (-0.1 <= relative_rx <= 0.1) & (-0.1 <= relative_ry <= 0.1)
-
-    # print(f"{relative_rx}, {relative_ry}")
+    is_on_guitar = (-RANGE_X <= relative_rx <= RANGE_X) & (-RANGE_Y <= relative_ry <= RANGE_Y)
     return relative_rx, relative_ry, is_on_guitar
-
-    
 
 
 if __name__ == '__main__':
@@ -264,7 +274,8 @@ if __name__ == '__main__':
 
         #初期位置取得用の画像の取得
         first_data = cam.grab()
-        
+        height, width, _ = first_data.shape
+
         # Decode the data can be used as image
         if GPUStatus == True:
             array = decoder.decodeGPU(first_data, True, reso.width)
@@ -283,7 +294,7 @@ if __name__ == '__main__':
         time.sleep(0.2)
         # 右手の相対位置を保存
         get_hand_relative_position()
-
+        draw_start_position(array)
         # # もし手が２本なかったらやり直し
         # if get_hands_count(current_hands) != 2:
         #     print("手の読み取りに失敗しました")
@@ -329,13 +340,12 @@ if __name__ == '__main__':
         # 相対座標の取得
         relative_rx, relative_ry, is_on_guitar = get_hand_relative_position()
         if (was_on_guitar == 0) and (is_on_guitar == 1):
-            print("再生中")
             chord = get_chord_by_position_l(100, 150) # 変数化
             sa.start_sound(chord)
-        else:
-            print("再生条件を満たしていません")
-        was_on_guitar = is_on_guitar 
-            
+
+        was_on_guitar = is_on_guitar
+
+        draw_start_position(frame)
 
         # Show the image
         frame = cv2.flip(frame, 1)
