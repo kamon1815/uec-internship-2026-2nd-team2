@@ -199,6 +199,7 @@ class Application(tk.Frame):
         was_on_guitar = is_on_guitar 
         #初期位置の描画
         array = draw_start_position(array)
+        array = cv2.flip(array, 1)
 
         #PILオブジェクトに変換してサイズを調整
         i = Image.fromarray(array).resize((int(w*scale), int(h*scale)))
@@ -354,6 +355,7 @@ class SetApplication(tk.Frame):
                 
         landmarker.detect_async(mp_image, frame_timestamp) #手を検出
         draw_landmarks(array, current_hands) #骨格に色付け
+        array = cv2.flip(array, 1)
 
         if get_hands_count(current_hands) == 2:
             if self.handflag == False:
