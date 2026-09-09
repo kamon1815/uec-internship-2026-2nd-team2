@@ -2,46 +2,11 @@ import time
 import cv2
 import numpy as np
 import openvino as ov
-import main
+import pose_estimation
+import math
 from pathlib import Path
 from pypuclib import CameraFactory
 
-# MODE = "npu_fp16"   
-
-# DEVICE, PRECISION = {"cpu_fp32": ("CPU", "f32"),
-#                      "gpu_fp16": ("GPU", "f16"),
-#                      "npu_fp16": ("NPU", "f16")}[MODE]
-# # 画像の読み込み
-# # カメラ
-# cap = cv2.VideoCapture(0) # webカメラ
-
-# if not cap.isOpened():
-#     print("エラー: Webカメラを開けませんでした。")
-#     exit()
-
-# # カメラの最大解像度を要求
-# cap.set(cv2.CAP_PROP_FRAME_WIDTH, 10000)
-# cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 10000)
-
-# # 解像度 W, H および FPS を取得
-# W = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-# H = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-# fps = cap.get(cv2.CAP_PROP_FPS)
-
-# if fps == 0 or fps is None or fps > 120:
-#     fps = 30.0
-
-# print(f"適用されたWebカメラ解像度: {W}x{H}, FPS: {fps}")
-
-# # モデル
-# core = ov.Core()
-
-# cam = CameraFactory().create() # INFINICAM
-# cam.setFramerateShutter(30, 30)
-# decoder = cam.decoder()
-# W, H = cam.resolution().width, cam.resolution().height
-# USE_GPU_DECODE = decoder.getAvailableGPUProcess()     # CUDA専用。無ければCPUデコード
-# #ret, img = cap.read()
 BASE_DIR = Path(__file__).resolve().parent
 # コードファイルの読み取り
 def get_codetype(img):
@@ -80,18 +45,6 @@ def get_codetype(img):
         'コードE': (max_val_E, max_loc_E, code_E_gray.shape)
         }
 
-
-
-    # 描画する。
-    dst = img.copy()
-    for x, y in zip():
-        cv2.rectangle(
-            dst,
-            (x, y),
-            (x + code_A.shape[1], y + code_A.shape[0]),
-            color=(0, 255, 0),
-            thickness=2,
-        )
     if max_val_A > 0.7:
         print('コードA')
     elif max_val_D > 0.7:
@@ -108,26 +61,50 @@ ly2 = None
 lx3 = None
 ly3 = None
 
-# 座標からコード判定
-def decide_code():
-    # 座標取得
-    finger = main.get_finger_position('Left', 1)
+# 座標取得
+def decide_potion():
+    finger = pose_estimation.get_finger_position('Left', 1)
     global lx1, ly1, lx2, ly2, lx3, ly3
+    list_rength = len(finger)
+    print(list_rength)
     lx1 = finger[3].x
     ly1 = finger[3].y
 
-    finger = main.get_finger_position('Left', 2)
+    finger = pose_estimation.get_finger_position('Left', 2)
     
     lx2 = finger[3].x
     ly2 = finger[3].y
 
-    finger = main.get_finger_position('Left', 3)
+    finger = pose_estimation.get_finger_position('Left', 3)
     
     lx3 = finger[3].x
     ly3 = finger[3].y
     print(lx1, ly1, lx2, ly2, lx3, ly3)
     return(lx1, ly1, lx2, ly2, lx3, ly3)
+    
+
+# コード判定
+def get_lefthand_potions(lx1, ly1, lx2, ly2, lx3, ly3):
+    # 指間の距離
+    dist_12 = math.hypot(lx2 - lx1, ly2 - ly1)
+    dist_23 = math.hypot(lx3 - lx2, ly3 - ly2)
+    dist_31 = math.hypot(lx1 - lx3, ly1 - ly3)
+
+    # 外積
+    cross_product = (lx2 - lx1) * (ly3 - ly1) - (ly2 - ly1) * (lx3 - lx1)
+
+    # 三角形の面積
+    area = abs(cross_product) / 2
+
+    if -1 < area < 1:
+        print("コードA")
+    else:
+        print("コードD")
+        print("コードE")
+  
 
 
 while True:
-    lx1, ly1, lx2, ly2, lx3, ly3 = decide_code()
+    # code_A_1, code_D_1, code_E_1 = get_codetype(img)
+    lx1, ly1, lx2, ly2, lx3, ly3 = decide_potion()
+    get_lefthand_potions(lx1, ly1, lx2, ly2, lx3, ly3)
