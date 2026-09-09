@@ -665,6 +665,7 @@ if __name__ == '__main__':
         break
 
     draw_landmarks(array, current_hands) #骨格の描画
+    draw_start_position(array)
     array = cv2.flip(array,1)
     array = cv2.putText(array, "これが初期位置です。5秒後に遷移します。", (400, 50), cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (255,255,255), 2, cv2.LINE_AA) # 案内文の追加
     cv2.imshow("Setup", array)
