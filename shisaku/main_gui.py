@@ -194,8 +194,8 @@ class Application(tk.Frame):
             print("再生中")
             chord = get_chord_by_position_l(100, 150) # 変数化
             self.start_sound(chord)
-        else:
-            print("再生条件を満たしていません")
+        #else:
+            #print("再生条件を満たしていません")
         was_on_guitar = is_on_guitar 
         #初期位置の描画
         array = draw_start_position(array)
@@ -271,7 +271,10 @@ class SetApplication(tk.Frame):
 
         self.font = tkfont.Font(self,family="Arial",size=10,weight="bold")
         self.message = tk.StringVar()
-        self.message.set("初期位置の設定をします。両手でギターを持つように構えてください")
+        self.message.set("初期位置の設定をします。両手でギターを持つように構えてください。")
+        self.starttime = 0
+        self.endflag = False
+        self.handflag = False
 
         #self.t=0動作確認
 
@@ -322,12 +325,11 @@ class SetApplication(tk.Frame):
         #data = self.cam.grab()
         data = cv2.cvtColor(data, cv2.COLOR_RGB2BGR)
         self.updatecanvas(data)
-        self.updateID = self.after(self.delay, self.update)
-        self.t+=1
-        if self.t==100:
-            self.updatetext("時間経過")
-        elif self.t == 200:
-            self.quit()
+        if self.endflag == False:
+            self.updateID = self.after(self.delay, self.update)
+        else:
+            self.master.destroy()
+            #self.quit()
 
     def updatecanvas(self, data):
         cw = self.canvas.winfo_width()
@@ -345,6 +347,33 @@ class SetApplication(tk.Frame):
         array = data
         #INFINICAM
         #array = self.decoder.decode(data)
+
+        #骨格推定
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=array) #mediapipeの画像として使える塊にする。    
+        frame_timestamp = int((time.time() - start_time) * 1000) #タイムスタンプ作成
+                
+        landmarker.detect_async(mp_image, frame_timestamp) #手を検出
+        draw_landmarks(array, current_hands) #骨格に色付け
+
+        if get_hands_count(current_hands) == 2:
+            if self.handflag == False:
+                self.starttime = time.time()
+                self.updatetext("そのまま維持してください。3秒後に初期位置が決まります。")
+                self.handflag = True
+            elif (time.time() - self.starttime) >= 3:
+                global height, width
+                height, width, _ = array.shape
+                get_hand_relative_position()
+                self.endflag = True
+                self.terminate()
+            else:
+                t = int(time.time() - self.starttime)
+                self.updatetext(f"そのまま維持してください。{3-t}秒後に初期位置が決まります。")
+        else:
+            if self.handflag == True:
+                self.updatetext("読み取りに失敗しました。もう一度お願いします。")
+                self.handflag = False
+        
         #PILオブジェクトに変換してサイズを調整
         i = Image.fromarray(array).resize((int(w*scale), int(h*scale)))
         self.img = ImageTk.PhotoImage(image=i)#PILオブジェクトをtkinterで表示できる形に変換
@@ -360,6 +389,11 @@ class SetApplication(tk.Frame):
 
     def resettext(self):
         self.message.set("初期位置の設定をします。両手でギターを持つように構えてください")
+
+    def terminate(self):
+        self.after_cancel(self.updateID)
+        self.cap.release()
+        #self.cam.close() # INFINICAM
 
 model_path = 'hand_landmarker.task'
 
@@ -611,7 +645,7 @@ def get_hand_relative_position(): #基準点(base_rx,base_ry)に対する現在�
 
 if __name__ == '__main__':
     #sa = sound_admin()
-
+    '''
     print("演奏位置の設定を行います")
     while True:
         print("準備ができたらEnterキーを押してください")
@@ -631,18 +665,19 @@ if __name__ == '__main__':
         height, width, _ = array.shape
 
         #INFINICAM用
-        '''
+        
         #初期位置取得用の画像の取得
         first_data = cam.grab()
         
         # Decode the data can be used as image
-        if GPUStatus == True:
-            array = decoder.decodeGPU(first_data, True, reso.width)
-        elif GPUStatus == False:
-            array = decoder.decode(first_data)
+        #if GPUStatus == True:
+        #    array = decoder.decodeGPU(first_data, True, reso.width)
+        #elif GPUStatus == False:
+        #    array = decoder.decode(first_data)
         
-        array = cv2.cvtColor(array, cv2.COLOR_GRAY2BGR)
-        '''
+        #array = cv2.cvtColor(array, cv2.COLOR_GRAY2BGR)
+        
+        
 
 
         # 骨格推定
@@ -670,6 +705,12 @@ if __name__ == '__main__':
     cv2.waitKey(5000) # 5秒待機
     cv2.destroyAllWindows()
     cap.release()
+    '''
+    setroot = tk.Tk()
+    setapp = SetApplication(master=setroot)
+    setapp.mainloop()
+
+    time.sleep(0.5)
 
     root = tk.Tk()
     app = Application(master = root)
