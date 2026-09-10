@@ -32,14 +32,13 @@ class Application(tk.Frame):
         self.pack(expand=1, fill=tk.BOTH, anchor=tk.NW)
 
         #webcam
-        self.cap = cv2.VideoCapture(0)
+        #self.cap = cv2.VideoCapture(0)
 
         #INFINICAM
-        '''
         self.cam = CameraFactory().create()
         self.fcreator = None
         self.decoder = self.cam.decoder()
-        '''
+        
         #音管理
         self.s_admin = sound_admin()
 
@@ -143,10 +142,11 @@ class Application(tk.Frame):
     #更新関数(定期的に呼び出し)
     def update(self):
         #webcam
-        ret, data = self.cap.read()
+        #ret, data = self.cap.read()
+        
         #INFINICAM
-        #data = self.cam.grab()
-        data = cv2.cvtColor(data, cv2.COLOR_RGB2BGR)
+        data = self.cam.grab()
+        
         self.updatecanvas(data)
         self.updateID = self.after(self.delay, self.update)
         
@@ -155,20 +155,21 @@ class Application(tk.Frame):
     def updatecanvas(self, data):
         cw = self.canvas.winfo_width()
         ch = self.canvas.winfo_height()
-        h, w, _ = data.shape
-        '''
+        #h, w, _ = data.shape #webcam
+        #INFINICAM
         w = data.resolution().width
         h = data.resolution().height
-        '''
+
         scale = 1
         if cw > 1 and ch > 1:
             scale = cw/w if cw/w < ch/h else ch/h
         
 
         #webcam
-        array = data
+        #array = cv2.cvtColor(data, cv2.COLOR_RGB2BGR)
         #INFINICAM
-        #array = self.decoder.decode(data)
+        array = self.decoder.decode(data)
+        array = cv2.cvtColor(array, cv2.COLOR_GRAY2BGR)
 
         #骨格推定
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=array) #mediapipeの画像として使える塊にする。    
@@ -261,14 +262,13 @@ class SetApplication(tk.Frame):
         self.pack(expand=1, fill=tk.BOTH, anchor=tk.NW)
 
         #webcam
-        self.cap = cv2.VideoCapture(0)
+        #self.cap = cv2.VideoCapture(0)
 
         #INFINICAM
-        '''
         self.cam = CameraFactory().create()
         self.fcreator = None
         self.decoder = self.cam.decoder()
-        '''
+        
 
         self.font = tkfont.Font(self,family="Arial",size=10,weight="bold")
         self.message = tk.StringVar()
@@ -321,10 +321,11 @@ class SetApplication(tk.Frame):
 
     def update(self):
         #webcam
-        ret, data = self.cap.read()
+        #ret, data = self.cap.read()
+        
         #INFINICAM
-        #data = self.cam.grab()
-        data = cv2.cvtColor(data, cv2.COLOR_RGB2BGR)
+        data = self.cam.grab()
+        
         self.updatecanvas(data)
         if self.endflag == False:
             self.updateID = self.after(self.delay, self.update)
@@ -335,19 +336,21 @@ class SetApplication(tk.Frame):
     def updatecanvas(self, data):
         cw = self.canvas.winfo_width()
         ch = self.canvas.winfo_height()
-        h, w, _ = data.shape
-        '''
+        #h, w, _ = data.shape # webcam
+        #INFINICAM
         w = data.resolution().width
         h = data.resolution().height
-        '''
+
         scale = 1
         if cw > 1 and ch > 1:
             scale = cw/w if cw/w < ch/h else ch/h   
 
         #webcam
-        array = data
+        #data = cv2.cvtColor(data, cv2.COLOR_RGB2BGR)
+
         #INFINICAM
-        #array = self.decoder.decode(data)
+        array = self.decoder.decode(data)
+        array = cv2.cvtColor(array, cv2.COLOR_GRAY2BGR)
 
         #骨格推定
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=array) #mediapipeの画像として使える塊にする。    
@@ -394,8 +397,8 @@ class SetApplication(tk.Frame):
 
     def terminate(self):
         self.after_cancel(self.updateID)
-        self.cap.release()
-        #self.cam.close() # INFINICAM
+        #self.cap.release()
+        self.cam.close() # INFINICAM
 
 model_path = 'hand_landmarker.task'
 
