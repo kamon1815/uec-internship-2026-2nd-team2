@@ -192,7 +192,6 @@ class Application(tk.Frame):
         global was_on_guitar
         relative_rx, relative_ry, is_on_guitar = get_hand_relative_position()
         if (was_on_guitar == 0) and (is_on_guitar == 1) and (get_hands_count(current_hands) == 2):
-            print("再生中")
             lx1, ly1, lx2, ly2, lx3, ly3 = get_lefthand_potions()
             chord = decide_code(lx1, ly1, lx2, ly2, lx3, ly3)
             self.start_sound(chord)
@@ -651,7 +650,6 @@ def decide_code(lx1, ly1, lx2, ly2, lx3, ly3):
     dist_12 = math.hypot(lx2 - lx1, ly2 - ly1)
     dist_23 = math.hypot(lx3 - lx2, ly3 - ly2)
     dist_31 = math.hypot(lx1 - lx3, ly1 - ly3)
-    print('距離')
     print(dist_12, dist_23, dist_31)
 
     # 外積
@@ -670,7 +668,9 @@ def decide_code(lx1, ly1, lx2, ly2, lx3, ly3):
     elif 0.05 > dist_12:
         print("コードE")
         return("ファ")
-    # if -0.01 < area < 0.01:
+    else:
+        return("ド")
+    # if area < 0.00001:
     #     print("コードA")
     #     return ("ラ")
     # elif (ly2 < ly1) & (ly2 < ly3):
