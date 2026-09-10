@@ -653,7 +653,7 @@ def get_lefthand_potions():
     finger1 = get_finger_position('Left', 1, current_hands)
     finger2 = get_finger_position('Left', 2, current_hands)
     finger3 = get_finger_position('Left', 3, current_hands)
-    if (finger1 is not []) & (finger2 is not []) & (finger3 is not []):
+    if (finger1 != []) & (finger2 != []) & (finger3 != []):
         global lx1, ly1, lx2, ly2, lx3, ly3
         lx1 = finger1[3].x
         ly1 = finger1[3].y
@@ -661,7 +661,6 @@ def get_lefthand_potions():
         ly2 = finger2[3].y
         lx3 = finger3[3].x
         ly3 = finger3[3].y
-        print(lx1, ly1, lx2, ly2, lx3, ly3)
         return(lx1, ly1, lx2, ly2, lx3, ly3)
     else :
         return(0, 0, 0, 0, 0, 0)
