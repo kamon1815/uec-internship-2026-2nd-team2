@@ -191,9 +191,9 @@ class Application(tk.Frame):
         # 相対座標の取得
         global was_on_guitar
         relative_rx, relative_ry, is_on_guitar = get_hand_relative_position()
-        if (was_on_guitar == 0) and (is_on_guitar == 1):
-            print("再生中")
-            chord = get_chord_by_position_l(100, 150) # 変数化
+        if (was_on_guitar == 0) and (is_on_guitar == 1) and (get_hands_count(current_hands) == 2):
+            lx1, ly1, lx2, ly2, lx3, ly3 = get_lefthand_potions()
+            chord = decide_code(lx1, ly1, lx2, ly2, lx3, ly3)
             self.start_sound(chord)
         #else:
             #print("再生条件を満たしていません")
@@ -606,28 +606,6 @@ def draw_start_position(img):
     else:
         return img
 
-def get_chord_by_position_l(xl1, yl1):
-    # テスト (座標)
-    base_lx = 100 # 変数化
-    base_ly = 200
-    current_lx = 207
-    current_ly = 290
-    relative_lx = current_lx - base_lx
-    relative_ly = current_ly - base_ly
-    # 指の座標でコードを決める
-    if (0 <= relative_lx < 200) & (0 <= relative_ly < 200): # 範囲の決定
-        chord_type = "ラ"
-    elif (200 <= relative_lx < 400) & (200 <= relative_ly < 400):
-        chord_type = "レ"
-    elif (400 <= relative_lx < 600) & (400 <= relative_ly < 600):
-        chord_type = "ミ"
-    else:
-        print('コードがわかりません')
-        print(f"左手の相対座標:({relative_lx}, {relative_ly})")
-        return 
-
-    print(f"コード{chord_type}")
-    return chord_type
 
 def get_hand_relative_position(): #基準点(base_rx,base_ry)に対する現在の指の相対位置を取得
     hand_position = get_hand_position('Right', current_hands)
@@ -668,12 +646,12 @@ def get_lefthand_potions():
 
 # コード判定
 def decide_code(lx1, ly1, lx2, ly2, lx3, ly3):
+    # print(lx1, ly1, lx2, ly2, lx3, ly3)
     # 指間の距離
     dist_12 = math.hypot(lx2 - lx1, ly2 - ly1)
     dist_23 = math.hypot(lx3 - lx2, ly3 - ly2)
     dist_31 = math.hypot(lx1 - lx3, ly1 - ly3)
-    print('距離')
-    print(dist_12, dist_23, dist_31)
+    # print(dist_12, dist_23, dist_31)
 
     # 外積
     cross_product = (lx2 - lx1) * (ly3 - ly1) - (ly2 - ly1) * (lx3 - lx1)
@@ -681,25 +659,30 @@ def decide_code(lx1, ly1, lx2, ly2, lx3, ly3):
     # 三角形の面積
     area = abs(cross_product) / 2
     print(area)
-
-    if 0.15 < dist_31:
-        print("コードA")
-        return("ラ")
-    elif 0.05 > dist_23:
-        print("コードD")
-        return("ミ")
-    elif 0.05 > dist_12:
-        print("コードE")
-        return("ファ")
-    # if -0.01 < area < 0.01:
+    judge = 0.00002
+    # if 0.15 < dist_31:
     #     print("コードA")
-    #     return ("ラ")
-    # elif (ly2 < ly1) & (ly2 < ly3):
+    #     return("ラ")
+    # elif 0.05 > dist_23:
     #     print("コードD")
-    #     return("ド")
-    # elif (ly2 > ly1) & (ly2 > ly3):
-    #     print("コードE")
     #     return("ミ")
+    # elif 0.05 > dist_12:
+    #     print("コードE")
+    #     return("ファ")
+    # else:
+    #     return("ド")
+    if area < judge:
+        print("コードA")
+        return ("ラ")
+    elif (ly2 > ly1) & (ly2 > ly3):
+        print("コードD")
+        return("ド")
+    elif (ly2 < ly1) & (ly2 < ly3):
+        print("コードE")
+        return("ミ")
+    else:
+        print("コードG")
+        return("レ")
 
 if __name__ == '__main__':
     #sa = sound_admin()
