@@ -87,7 +87,7 @@ class Application(tk.Frame):
                                           textvariable=self.instStr)
         self.instrumentList.pack(side=tk.LEFT, padx=5)
         #同期イベントの設定
-        #self.framerateList.bind("<<ComboboxSelected>>", self.updateinstrumental)
+        self.instrumentList.bind("<<ComboboxSelected>>", self.updateinstrument)
 
         #---------------------------------------------------
         # volume
@@ -221,6 +221,10 @@ class Application(tk.Frame):
     #最新の音の表示更新
     def updatesound(self):
         self.soundList["text"] = self.recent_sound
+
+    def updateinstrument(self,e):
+        inst = self.instStr.get()
+        self.s_admin.changesound(inst)
 
     #キー入力に反応
     def press_key(self, e):
@@ -397,7 +401,7 @@ class SetApplication(tk.Frame):
 
     def terminate(self):
         self.after_cancel(self.updateID)
-        #self.cap.release()
+        #self.cap.release() # webcam
         self.cam.close() # INFINICAM
 
 model_path = 'hand_landmarker.task'
@@ -649,7 +653,7 @@ def get_lefthand_potions():
     finger1 = get_finger_position('Left', 1, current_hands)
     finger2 = get_finger_position('Left', 2, current_hands)
     finger3 = get_finger_position('Left', 3, current_hands)
-    if (finger1 is not []) & (finger2 is not []) & (finger3 is not []):
+    if (finger1 != []) & (finger2 != []) & (finger3 != []):
         global lx1, ly1, lx2, ly2, lx3, ly3
         lx1 = finger1[3].x
         ly1 = finger1[3].y
@@ -657,7 +661,6 @@ def get_lefthand_potions():
         ly2 = finger2[3].y
         lx3 = finger3[3].x
         ly3 = finger3[3].y
-        print(lx1, ly1, lx2, ly2, lx3, ly3)
         return(lx1, ly1, lx2, ly2, lx3, ly3)
     else :
         return(0, 0, 0, 0, 0, 0)
