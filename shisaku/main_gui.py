@@ -646,11 +646,12 @@ def get_lefthand_potions():
 
 # コード判定
 def decide_code(lx1, ly1, lx2, ly2, lx3, ly3):
+    # print(lx1, ly1, lx2, ly2, lx3, ly3)
     # 指間の距離
     dist_12 = math.hypot(lx2 - lx1, ly2 - ly1)
     dist_23 = math.hypot(lx3 - lx2, ly3 - ly2)
     dist_31 = math.hypot(lx1 - lx3, ly1 - ly3)
-    print(dist_12, dist_23, dist_31)
+    # print(dist_12, dist_23, dist_31)
 
     # 外積
     cross_product = (lx2 - lx1) * (ly3 - ly1) - (ly2 - ly1) * (lx3 - lx1)
@@ -658,27 +659,30 @@ def decide_code(lx1, ly1, lx2, ly2, lx3, ly3):
     # 三角形の面積
     area = abs(cross_product) / 2
     print(area)
-
-    if 0.15 < dist_31:
-        print("コードA")
-        return("ラ")
-    elif 0.05 > dist_23:
-        print("コードD")
-        return("ミ")
-    elif 0.05 > dist_12:
-        print("コードE")
-        return("ファ")
-    else:
-        return("ド")
-    # if area < 0.00001:
+    judge = 0.00002
+    # if 0.15 < dist_31:
     #     print("コードA")
-    #     return ("ラ")
-    # elif (ly2 < ly1) & (ly2 < ly3):
+    #     return("ラ")
+    # elif 0.05 > dist_23:
     #     print("コードD")
-    #     return("ド")
-    # elif (ly2 > ly1) & (ly2 > ly3):
-    #     print("コードE")
     #     return("ミ")
+    # elif 0.05 > dist_12:
+    #     print("コードE")
+    #     return("ファ")
+    # else:
+    #     return("ド")
+    if area < judge:
+        print("コードA")
+        return ("ラ")
+    elif (ly2 > ly1) & (ly2 > ly3):
+        print("コードD")
+        return("ド")
+    elif (ly2 < ly1) & (ly2 < ly3):
+        print("コードE")
+        return("ミ")
+    else:
+        print("コードG")
+        return("レ")
 
 if __name__ == '__main__':
     #sa = sound_admin()
