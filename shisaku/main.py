@@ -299,9 +299,12 @@ def decide_code(lx1, ly1, lx2, ly2, lx3, ly3):
     if 0.15 < dist_31:
         print("コードA")
         return("ラ")
-    elif 0.2 > dist_23:
+    elif 0.1 > dist_23:
         print("コードD")
         return("ミ")
+    elif 0.1 > dist_12:
+        print("コードE")
+        return("ファ")
     # elif (ly2 < ly1) & (ly2 < ly3):
     #     print("コードD")
     #     return("ド")
