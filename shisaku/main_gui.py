@@ -673,16 +673,16 @@ def decide_code(lx1, ly1, lx2, ly2, lx3, ly3):
     #     return("ド")
     if area < judge:
         print("コードA")
-        return ("ラ")
+        return ("A")
     elif (ly2 > ly1) & (ly2 > ly3):
         print("コードD")
-        return("レ")
+        return("D")
     elif (ly2 < ly1) & (ly2 < ly3):
         print("コードE")
-        return("ミ")
+        return("E")
     else:
         print("コードG")
-        return("ソ")
+        return("G")
 
 if __name__ == '__main__':
     #sa = sound_admin()
