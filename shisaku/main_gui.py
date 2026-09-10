@@ -397,7 +397,7 @@ class SetApplication(tk.Frame):
 
     def terminate(self):
         self.after_cancel(self.updateID)
-        #self.cap.release()
+        #self.cap.release() # webcam
         self.cam.close() # INFINICAM
 
 model_path = 'hand_landmarker.task'
