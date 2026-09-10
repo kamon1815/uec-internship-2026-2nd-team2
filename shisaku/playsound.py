@@ -40,13 +40,13 @@ class sound_admin:
         mix.init()
         self.sounds = {"drum" : mix.Sound(INPUT1),
                        "chime" : mix.Sound(INPUT2),
-                       "ド" : mix.Sound(INPUT_C),
-                       "レ" : mix.Sound(INPUT_D),
-                       "ミ" : mix.Sound(INPUT_E),
-                       "ファ" : mix.Sound(INPUT_F),
-                       "ソ" : mix.Sound(INPUT_G),
-                       "ラ" : mix.Sound(INPUT_A),
-                       "シ" : mix.Sound(INPUT_B)
+                       "C" : mix.Sound(INPUT_C),
+                       "D" : mix.Sound(INPUT_D),
+                       "E" : mix.Sound(INPUT_E),
+                       "F" : mix.Sound(INPUT_F),
+                       "G" : mix.Sound(INPUT_G),
+                       "A" : mix.Sound(INPUT_A),
+                       "B" : mix.Sound(INPUT_B)
                        }
         self.active_channel = []
         self.max_channel = max
@@ -74,23 +74,23 @@ class sound_admin:
         self.stop_allsound()
         if inst == "piano":
             self.sounds = {
-                       "ド" : mix.Sound(INPUT_C_P),
-                       "レ" : mix.Sound(INPUT_D_P),
-                       "ミ" : mix.Sound(INPUT_E_P),
-                       "ファ" : mix.Sound(INPUT_F_P),
-                       "ソ" : mix.Sound(INPUT_G_P),
-                       "ラ" : mix.Sound(INPUT_A_P),
-                       "シ" : mix.Sound(INPUT_B_P)
+                       "C" : mix.Sound(INPUT_C_P),
+                       "D" : mix.Sound(INPUT_D_P),
+                       "E" : mix.Sound(INPUT_E_P),
+                       "F" : mix.Sound(INPUT_F_P),
+                       "G" : mix.Sound(INPUT_G_P),
+                       "A" : mix.Sound(INPUT_A_P),
+                       "B" : mix.Sound(INPUT_B_P)
                        }
         elif inst == "guitar":
             self.sounds = {
-                            "ド" : mix.Sound(INPUT_C),
-                            "レ" : mix.Sound(INPUT_D),
-                            "ミ" : mix.Sound(INPUT_E),
-                            "ファ" : mix.Sound(INPUT_F),
-                            "ソ" : mix.Sound(INPUT_G),
-                            "ラ" : mix.Sound(INPUT_A),
-                            "シ" : mix.Sound(INPUT_B)
+                            "C" : mix.Sound(INPUT_C),
+                            "D" : mix.Sound(INPUT_D),
+                            "E" : mix.Sound(INPUT_E),
+                            "F" : mix.Sound(INPUT_F),
+                            "G" : mix.Sound(INPUT_G),
+                            "A" : mix.Sound(INPUT_A),
+                            "B" : mix.Sound(INPUT_B)
                             }
         else:
             print("input error")

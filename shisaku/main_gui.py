@@ -231,19 +231,19 @@ class Application(tk.Frame):
         key = ord(e.keysym)
         
         if key & 0xFF == ord('w'):
-            self.start_sound("ド")
+            self.start_sound("C")
         elif key & 0xFF == ord('e'):
-            self.start_sound("レ")
+            self.start_sound("D")
         elif key & 0xFF == ord('r'):
-            self.start_sound("ミ")
+            self.start_sound("E")
         elif key & 0xFF == ord('t'):
-            self.start_sound("ファ")
+            self.start_sound("F")
         elif key & 0xFF == ord('y'):
-            self.start_sound("ソ")
+            self.start_sound("G")
         elif key & 0xFF == ord('u'):
-            self.start_sound("ラ")
+            self.start_sound("A")
         elif key & 0xFF == ord('i'):
-            self.start_sound("シ")
+            self.start_sound("B")
 
     #演奏用
     #------------------------------------------------------
