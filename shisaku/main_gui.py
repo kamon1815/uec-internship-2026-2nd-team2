@@ -659,7 +659,7 @@ def decide_code(lx1, ly1, lx2, ly2, lx3, ly3):
     # 三角形の面積
     area = abs(cross_product) / 2
     print(area)
-    judge = 0.00005
+    judge = 0.0004
     # if 0.15 < dist_31:
     #     print("コードA")
     #     return("ラ")
@@ -676,13 +676,13 @@ def decide_code(lx1, ly1, lx2, ly2, lx3, ly3):
         return ("ラ")
     elif (ly2 > ly1) & (ly2 > ly3):
         print("コードD")
-        return("ド")
+        return("レ")
     elif (ly2 < ly1) & (ly2 < ly3):
         print("コードE")
         return("ミ")
     else:
         print("コードG")
-        return("レ")
+        return("ソ")
 
 if __name__ == '__main__':
     #sa = sound_admin()
