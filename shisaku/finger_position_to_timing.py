@@ -27,7 +27,7 @@ base_rx = None
 base_ry = None
 
 # 座標取得
-def get_finger():
+def get_hand_relative_position():
 
     finger = pose_estimation.get_finger_position('Right', 1)
     global base_rx, base_ry
@@ -38,12 +38,13 @@ def get_finger():
     current_rx = finger[3].x
     current_ry = finger[3].y
 
+
     relative_rx = current_rx - base_rx
     relative_ry = current_ry - base_ry
     print(f"{relative_rx}, {relative_ry}")
     return relative_rx, relative_ry
 
 while True:
-    relative_rx, relative_ry = get_finger()
+    relative_rx, relative_ry = get_hand_relative_position()
     if (-0.05 <= relative_rx <= 0.05) & (-0.05 <= relative_ry <= 0.05):
         get_chord_by_position_l(100, 150) # 変数化
