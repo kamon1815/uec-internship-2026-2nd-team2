@@ -171,6 +171,8 @@ class Application(tk.Frame):
         array = self.decoder.decode(data)
         array = cv2.cvtColor(array, cv2.COLOR_GRAY2BGR)
 
+
+        array =  cv2.convertScaleAbs(array, alpha=2, beta=0)
         #骨格推定
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=array) #mediapipeの画像として使える塊にする。    
         frame_timestamp = int((time.time() - start_time) * 1000) #タイムスタンプ作成
@@ -231,19 +233,19 @@ class Application(tk.Frame):
         key = ord(e.keysym)
         
         if key & 0xFF == ord('w'):
-            self.start_sound("ド")
+            self.start_sound("C")
         elif key & 0xFF == ord('e'):
-            self.start_sound("レ")
+            self.start_sound("D")
         elif key & 0xFF == ord('r'):
-            self.start_sound("ミ")
+            self.start_sound("E")
         elif key & 0xFF == ord('t'):
-            self.start_sound("ファ")
+            self.start_sound("F")
         elif key & 0xFF == ord('y'):
-            self.start_sound("ソ")
+            self.start_sound("G")
         elif key & 0xFF == ord('u'):
-            self.start_sound("ラ")
+            self.start_sound("A")
         elif key & 0xFF == ord('i'):
-            self.start_sound("シ")
+            self.start_sound("B")
 
     #演奏用
     #------------------------------------------------------
@@ -306,7 +308,7 @@ class SetApplication(tk.Frame):
         #---------------------------------------------------
         # explain text
         #---------------------------------------------------
-        #説明文の作成
+        # 説明文の作成
         self.explainPanel = ttk.Frame(self.optionFrame,
                                         width=frameWidth,
                                         height=frameHeight,
@@ -356,6 +358,7 @@ class SetApplication(tk.Frame):
         array = self.decoder.decode(data)
         array = cv2.cvtColor(array, cv2.COLOR_GRAY2BGR)
 
+        array =  cv2.convertScaleAbs(array, alpha=2, beta=0)
         #骨格推定
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=array) #mediapipeの画像として使える塊にする。    
         frame_timestamp = int((time.time() - start_time) * 1000) #タイムスタンプ作成
@@ -455,8 +458,8 @@ options = HandLandmarkerOptions(
     base_options=base_options,
     running_mode=VisionRunningMode.LIVE_STREAM,
     num_hands=2,
-    min_hand_detection_confidence=0.2,
-    min_hand_presence_confidence=0.2,
+    min_hand_detection_confidence=0.5,
+    min_hand_presence_confidence=0.5,
     result_callback=print_result)
 
 landmarker = vision.HandLandmarker.create_from_options(options)
@@ -659,7 +662,7 @@ def decide_code(lx1, ly1, lx2, ly2, lx3, ly3):
     # 三角形の面積
     area = abs(cross_product) / 2
     print(area)
-    judge = 0.0004
+    judge = 0.00004
     # if 0.15 < dist_31:
     #     print("コードA")
     #     return("ラ")
