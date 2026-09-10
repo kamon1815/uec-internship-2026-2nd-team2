@@ -19,6 +19,14 @@ INPUT_F = BASE_DIR / "sound/F.wav"
 INPUT_G = BASE_DIR / "sound/G.wav"
 INPUT_A = BASE_DIR / "sound/A.wav"
 INPUT_B = BASE_DIR / "sound/B.wav"
+INPUT_C_P = BASE_DIR / "sound/ピアノ_ド.mp3"
+INPUT_D_P = BASE_DIR / "sound/ピアノ_レ.mp3"
+INPUT_E_P = BASE_DIR / "sound/ピアノ_ミ.mp3"
+INPUT_F_P = BASE_DIR / "sound/ピアノ_ファ.mp3"
+INPUT_G_P = BASE_DIR / "sound/ピアノ_ソ.mp3"
+INPUT_A_P = BASE_DIR / "sound/ピアノ_ラ.mp3"
+INPUT_B_P = BASE_DIR / "sound/ピアノ_シ.mp3"
+
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -61,6 +69,31 @@ class sound_admin:
     def stop_allsound(self):
         for value in self.sounds.values():
             value.stop()
+
+    def changesound(self, inst="guitar"):
+        self.stop_allsound()
+        if inst == "piano":
+            self.sounds = {
+                       "ド" : mix.Sound(INPUT_C_P),
+                       "レ" : mix.Sound(INPUT_D_P),
+                       "ミ" : mix.Sound(INPUT_E_P),
+                       "ファ" : mix.Sound(INPUT_F_P),
+                       "ソ" : mix.Sound(INPUT_G_P),
+                       "ラ" : mix.Sound(INPUT_A_P),
+                       "シ" : mix.Sound(INPUT_B_P)
+                       }
+        elif inst == "guitar":
+            self.sounds = {
+                            "ド" : mix.Sound(INPUT_C),
+                            "レ" : mix.Sound(INPUT_D),
+                            "ミ" : mix.Sound(INPUT_E),
+                            "ファ" : mix.Sound(INPUT_F),
+                            "ソ" : mix.Sound(INPUT_G),
+                            "ラ" : mix.Sound(INPUT_A),
+                            "シ" : mix.Sound(INPUT_B)
+                            }
+        else:
+            print("input error")
 #-------------------------------------
 
 
@@ -146,6 +179,8 @@ if __name__ == '__main__':
             sa.start_sound("ラ", sound_volume)
         elif key & 0xFF == ord('i'):
             sa.start_sound("シ", sound_volume)
+        elif key & 0xFF == ord('p'):
+            sa.changesound("piano")
         elif key & 0xFF == ord('v'):
             if sound_volume >= 0.1:
                 sound_volume -= 0.1

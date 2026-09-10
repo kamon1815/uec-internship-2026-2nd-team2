@@ -87,7 +87,7 @@ class Application(tk.Frame):
                                           textvariable=self.instStr)
         self.instrumentList.pack(side=tk.LEFT, padx=5)
         #同期イベントの設定
-        #self.framerateList.bind("<<ComboboxSelected>>", self.updateinstrumental)
+        self.instrumentList.bind("<<ComboboxSelected>>", self.updateinstrument)
 
         #---------------------------------------------------
         # volume
@@ -221,6 +221,10 @@ class Application(tk.Frame):
     #最新の音の表示更新
     def updatesound(self):
         self.soundList["text"] = self.recent_sound
+
+    def updateinstrument(self,e):
+        inst = self.instStr.get()
+        self.s_admin.changesound(inst)
 
     #キー入力に反応
     def press_key(self, e):
@@ -397,7 +401,7 @@ class SetApplication(tk.Frame):
 
     def terminate(self):
         self.after_cancel(self.updateID)
-        #self.cap.release()
+        #self.cap.release() # webcam
         self.cam.close() # INFINICAM
 
 model_path = 'hand_landmarker.task'
