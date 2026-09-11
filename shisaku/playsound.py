@@ -61,7 +61,8 @@ class sound_admin:
         self.update()
         
         self.sounds[select].set_volume(volume)
-        self.channel = self.sounds[select].play()
+        channel = self.sounds[select].play()
+        self.active_channel.append(channel)
 
     def stop_sound(self, select):
         self.sound = self.sounds[select].stop()
