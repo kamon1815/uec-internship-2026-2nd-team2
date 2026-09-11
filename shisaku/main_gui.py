@@ -662,7 +662,7 @@ def decide_code(lx1, ly1, lx2, ly2, lx3, ly3):
     # 三角形の面積
     area = abs(cross_product) / 2
     print(area)
-    judge = 0.0001
+    judge = 0.00015
     # if 0.15 < dist_31:
     #     print("コードA")
     #     return("ラ")
