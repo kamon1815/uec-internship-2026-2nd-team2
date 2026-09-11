@@ -196,7 +196,15 @@ class Application(tk.Frame):
         if (was_on_guitar == 0) and (is_on_guitar == 1) and (get_hands_count(current_hands) == 2):
             lx1, ly1, lx2, ly2, lx3, ly3 = get_lefthand_potions()
             chord = decide_code(lx1, ly1, lx2, ly2, lx3, ly3)
-            self.start_sound(chord)
+            dis_y = get_moved_distance()[1]
+            if dis_y >= 0.13:
+                volume = 1.0
+                print("high")
+            else:
+                volume = 0.7
+            if chord == "D":
+                volume *= 0.8
+            self.start_sound(chord, volume)
         #else:
             #print("再生条件を満たしていません")
         was_on_guitar = is_on_guitar 
